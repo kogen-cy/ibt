@@ -7,86 +7,86 @@
 
 (function (global) {
 
-    var _CONF = {
-        logicStart: "{{%", logicClose: "%}}",	// express logic  area, don't use RegExp meta character
-        printStart: "{{#", printClose: "#}}",	// express output area, don't use RegExp meta character
-        printStar2: "{{@", printClos2: "@}}",	// output with encode, don't use RegExp meta character
-        modelName: "_m",
-    }
+	var _CONF = {
+		logicStart: "{{%", logicClose: "%}}",	// express logic  area, don't use RegExp meta character
+		printStart: "{{#", printClose: "#}}",	// express output area, don't use RegExp meta character
+		printStar2: "{{@", printClos2: "@}}",	// output with encode, don't use RegExp meta character
+		modelName: "_m",
+	}
 
-    var _ENCODE = {
-    	"<": "&#60;", 
-    	">": "&#62;", 
-    	'"': "&#34;", 
-    	"'": "&#39;", 
-    	"/": "&#47;"
-    };
-    //not applicable type
-    var _TYPECONTAINER = {
-    	"CAPTION": "table", 
-    	"THEAD": "table",
-    	"TFOOT": "table",
-    	"TBOODY": "table",
-    	"TR": "table",
-    	"COLGROUP": "table tr",
-    	"COL: ": "table tr",
-    	"TH": "table tr",
-    	"TD": "table tr",
-    	"LI": "ul",
-    	"DT": "dl",
-    	"DD": "dl",
-    	"OPTION": "select",
-    	"OPTGROUP": "select",
-    	"AREA": "map",
-    	"LEGEND": "fieldset",
-    }
-    
-    var _CACHE = {html:{}, func:{}};
-    /***
-     * support only if|for in _ibt attribute
-     * .etc
-     *  if (condition) continue | break
-     *  if (condition) xxx; yyy; zzz; => {xxx; yyy; zzz;
-     *  for(condition) xxx; yyy; zzz; => {xxx; yyy; zzz;
-     ***/
+	var _ENCODE = {
+		"<": "&#60;", 
+		">": "&#62;", 
+		'"': "&#34;", 
+		"'": "&#39;", 
+		"/": "&#47;"
+	};
+	//not applicable type
+	var _TYPECONTAINER = {
+		"CAPTION": "table", 
+		"THEAD": "table",
+		"TFOOT": "table",
+		"TBOODY": "table",
+		"TR": "table",
+		"COLGROUP": "table tr",
+		"COL: ": "table tr",
+		"TH": "table tr",
+		"TD": "table tr",
+		"LI": "ul",
+		"DT": "dl",
+		"DD": "dl",
+		"OPTION": "select",
+		"OPTGROUP": "select",
+		"AREA": "map",
+		"LEGEND": "fieldset",
+	}
+	
+	var _CACHE = {html:{}, func:{}};
+	/***
+	 * support only if|for in _ibt attribute
+	 * .etc
+	 *  if (condition) continue | break
+	 *  if (condition) xxx; yyy; zzz; => {xxx; yyy; zzz;
+	 *  for(condition) xxx; yyy; zzz; => {xxx; yyy; zzz;
+	 ***/
 	var syntax = function(expr) {
-    	if (expr.match(/^if\(.*?\)\s+(continue|break)/)) {
-        	return {start: expr};
-    	}
-    	var m = expr.match(/^(if|for)\s*\(.*?\)\s*({?)/);
-    	if (m) {
-    		if (m[2]) {
-            	return {start: expr, close:"}"};
-    		} else {
-            	return {start: expr.replace(/(.+\(.*?\))/, "$1 {"), close:"}"};
-    		}
-    	}
-    	return "[error!] syntax: " + expr;
-    }
-    
-    var buildParts = function(partsSelector) {
-    	for (var key in _CACHE.html) {
-    		var strHtml = _CACHE.html[key];
-    		var eleDiv = document.createElement("div");
+		if (expr.match(/^if\(.*?\)\s+(continue|break)/)) {
+			return {start: expr};
+		}
+		var m = expr.match(/^(if|for)\s*\(.*?\)\s*({?)/);
+		if (m) {
+			if (m[2]) {
+				return {start: expr, close:"}"};
+			} else {
+				return {start: expr.replace(/(.+\(.*?\))/, "$1 {"), close:"}"};
+			}
+		}
+		return "[error!] syntax: " + expr;
+	}
+	
+	var buildParts = function(partsSelector) {
+		for (var key in _CACHE.html) {
+			var strHtml = _CACHE.html[key];
+			var eleDiv = document.createElement("div");
 
-    		var m = strHtml.match(/^\s*<([\w\d]+)/);
-        	if (m) {
-        		var containerTag = _TYPECONTAINER[m[1].toUpperCase()] || "div";
-        		var tags = containerTag.split(" ");
-        		for (var idx in tags) {
-        			var container = document.createElement(tags[idx]);
-        			eleDiv.append(container);
-        			eleDiv = container;
-        		}
-        	}
-        	var regstr;
-        	regstr = "(<!\\-\\-\\s*)?(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
-            strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, cmtStar, start) {return "<!-- " + start;})
-        	regstr = "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")(\\s*\\-\\->)?";
-            strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, close, cmtClose) {return close + " -->";})
-    		eleDiv.innerHTML = strHtml;
+			var m = strHtml.match(/^\s*<([\w\d]+)/);
+			if (m) {
+				var containerTag = _TYPECONTAINER[m[1].toUpperCase()] || "div";
+				var tags = containerTag.split(" ");
+				for (var idx in tags) {
+					var container = document.createElement(tags[idx]);
+					eleDiv.append(container);
+					eleDiv = container;
+				}
+			}
+			var regstr;
+			regstr = "(<!\\-\\-\\s*)?(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
+			strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, cmtStar, start) {return "<!-- " + start;})
+			regstr = "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")(\\s*\\-\\->)?";
+			strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, close, cmtClose) {return close + " -->";})
+			eleDiv.innerHTML = strHtml;
 
-    		var parts = eleDiv.querySelector(partsSelector);
+			var parts = eleDiv.querySelector(partsSelector);
 			if (parts) {
 				var partsFunc = this.build(this.prepare(parts.outerHTML));
 				_CACHE.func[partsSelector] = partsFunc;
@@ -96,17 +96,17 @@
 		return function() {return "[error!] buildParts: not found target. " + selector;};
 	}
 
-    var urlStringify = function (url, queryMap) {
-        if (!queryMap) return url;
-        if (!Object.keys(queryMap).length) return url;
+	var urlStringify = function (url, queryMap) {
+		if (!queryMap) return url;
+		if (!Object.keys(queryMap).length) return url;
 
-        return url + "?" + Object.keys(queryMap).map(function (key) {
-            return key + "=" + encodeURIComponent(queryMap[key]);
-        }).join("&");
-    }
+		return url + "?" + Object.keys(queryMap).map(function (key) {
+			return key + "=" + encodeURIComponent(queryMap[key]);
+		}).join("&");
+	}
 
-    /*********************************************************/
-    function IsBoringTemplate() {}
+	/*********************************************************/
+	function IsBoringTemplate() {}
 	var fn = IsBoringTemplate.prototype;
 
 	/*****
@@ -178,36 +178,36 @@
 	/*****
 	 * encode output area
 	 *****/
-    fn.encode = function (strHtml) {
-    	strHtml = strHtml || '';
-    	strHtml = strHtml.replace(/[<>"'\/]/g, function (c) { 
-    		return _ENCODE[c]; 
-    	});
-    	return strHtml
-    };
+	fn.encode = function (strHtml) {
+		strHtml = strHtml || '';
+		strHtml = strHtml.replace(/[<>"'\/]/g, function (c) { 
+			return _ENCODE[c]; 
+		});
+		return strHtml
+	};
 
-    /*****
-     * @deprecated (not for public use)
+	/*****
+	 * @deprecated (not for public use)
 	 *****/
 	fn.prepare = function(strHtml) {
-    	strHtml = strHtml.replace(/^\s+|\s+$/gm, "");
-    	var eleDiv = document.createElement("div");
+		strHtml = strHtml.replace(/^\s+|\s+$/gm, "");
+		var eleDiv = document.createElement("div");
 
-    	var m = strHtml.match(/^\s*<([\w\d]+)/);
-    	if (m) {
-    		var containerTag = _TYPECONTAINER[m[1].toUpperCase()] || "div";
-    		var tags = containerTag.split(" ");
-    		for (var idx in tags) {
-    			var container = document.createElement(tags[idx]);
-    			eleDiv.append(container);
-    			eleDiv = container;
-    		}
-    	}
-    	var regstr;
-    	regstr = "(<!\\-\\-\\s*)?(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
-        strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, cmtStart, start) {return "<!-- " + start;})
-    	regstr = "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")(\\s*\\-\\->)?";
-        strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, close, cmtClose) {return close + " -->";})
+		var m = strHtml.match(/^\s*<([\w\d]+)/);
+		if (m) {
+			var containerTag = _TYPECONTAINER[m[1].toUpperCase()] || "div";
+			var tags = containerTag.split(" ");
+			for (var idx in tags) {
+				var container = document.createElement(tags[idx]);
+				eleDiv.append(container);
+				eleDiv = container;
+			}
+		}
+		var regstr;
+		regstr = "(<!\\-\\-\\s*)?(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
+		strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, cmtStart, start) {return "<!-- " + start;})
+		regstr = "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")(\\s*\\-\\->)?";
+		strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, close, cmtClose) {return close + " -->";})
 		eleDiv.innerHTML = strHtml;
 
 		var logic = {};
@@ -255,35 +255,35 @@
 	 * build HTML for output
 	 * how to use: _ibt.duild(strHtml).call(_ibt, modelData)
 	 *****/
-    fn.build = function (strHtml) {
-    	var regstr;
-    	regstr  = "(<!\\-\\-\\s*)?";
-    	regstr += "(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
-    	regstr += "(.*?)";
-    	regstr += "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")";
-    	regstr += "(\\s*\\-\\->)?";
-    	
-        var tpl = strHtml.replace(/[\r\n]/g, " ")
-        	.replace(new RegExp(regstr, "g"), function (m, cmtStar, start, expr, close, cmtClose) {
-        		if (start === _CONF.logicStart && close === _CONF.logicClose) {
-        			return "'; " + expr + "; out+='";
-        		}
-        		if (start === _CONF.printStart && close === _CONF.printClose) {
-        			return "' + (" + expr + ") + '";
-        		}
-        		if (start === _CONF.printStar2 && close === _CONF.printClos2) {
-        			return "' + this.encode(" + expr + ") + '";
-        		}
+	fn.build = function (strHtml) {
+		var regstr;
+		regstr  = "(<!\\-\\-\\s*)?";
+		regstr += "(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
+		regstr += "(.*?)";
+		regstr += "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")";
+		regstr += "(\\s*\\-\\->)?";
+		
+		var tpl = strHtml.replace(/[\r\n]/g, " ")
+			.replace(new RegExp(regstr, "g"), function (m, cmtStar, start, expr, close, cmtClose) {
+				if (start === _CONF.logicStart && close === _CONF.logicClose) {
+					return "'; " + expr + "; out+='";
+				}
+				if (start === _CONF.printStart && close === _CONF.printClose) {
+					return "' + (" + expr + ") + '";
+				}
+				if (start === _CONF.printStar2 && close === _CONF.printClos2) {
+					return "' + this.encode(" + expr + ") + '";
+				}
 
-    			return "' + ('[error!] build. " + m + "') + '";
-            });
+				return "' + ('[error!] build. " + m + "') + '";
+			});
 
-        tpl = "var out=''; out+='" + tpl + "'; return out;";
+		tpl = "var out=''; out+='" + tpl + "'; return out;";
 
-        return new Function(_CONF.modelName, tpl);
-    };
+		return new Function(_CONF.modelName, tpl);
+	};
 
-    /*****
+	/*****
 	 * run first to define template(s)
 	 *****/
 	fn.buildTpl = function(tplSelector) {
@@ -389,46 +389,46 @@
 	 * show | off body 
 	 *****/
 	fn.showPage = function(visible) {
-    	var body = document.querySelector("body");
-    	if (body) {
-    		if (visible === false) {
-    			body.style.visibility = "hidden";
-    			return;
-    		}
+		var body = document.querySelector("body");
+		if (body) {
+			if (visible === false) {
+				body.style.visibility = "hidden";
+				return;
+			}
 			body.style.visibility = "visible";
-    	}
-    }
+		}
+	}
 
 	/*****
 	 * publish
 	 *****/
 	var _ibt = new IsBoringTemplate();
 	// CommonJS
-    if (typeof exports === 'object' && typeof module !== 'undefined') { 
-        module.exports = _ibt;
-    // AMD
-    } else if (typeof define === 'function') { 
-        define(function () { return _ibt; });
-    // WINDOWS
-    } else {
-        global._ibt = _ibt;
-    }
+	if (typeof exports === 'object' && typeof module !== 'undefined') { 
+		module.exports = _ibt;
+	// AMD
+	} else if (typeof define === 'function') { 
+		define(function () { return _ibt; });
+	// WINDOWS
+	} else {
+		global._ibt = _ibt;
+	}
 
-    switch (document.readyState) {
+	switch (document.readyState) {
 		case "loading":
-	    	document.addEventListener('DOMContentLoaded', function () {
-	    		_ibt.showPage(false);
-	    		if (typeof _ibtRun === 'function') _ibtRun();
-	    		_ibt.showPage(true);
-	    	});
+			document.addEventListener('DOMContentLoaded', function () {
+				_ibt.showPage(false);
+				if (typeof _ibtRun === 'function') _ibtRun();
+				_ibt.showPage(true);
+			});
 			break;
 		default : // interactive, complete
 			_ibt.showPage(false);
 			if (typeof _ibtRun === 'function') {_ibtRun(); _ibt.showPage(true); break;}
 			window.addEventListener("load", function () {
-	    		if (typeof _ibtRun === 'function') _ibtRun();
-	    		_ibt.showPage(true);
+				if (typeof _ibtRun === 'function') _ibtRun();
+				_ibt.showPage(true);
 			});
 			break;
-    }
+	}
 })(this);
