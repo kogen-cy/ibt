@@ -52,7 +52,7 @@ _ibtRun = function() {    // run on document ready, _ibtRun定義は必須では
 	_ibt.buildTpl(selector);	// テンプレート指定、selector指定なしの場合は全ページ（<body>）  
 	_ibt.buildTpl("#menu");		// 分割し、共通化  
 	_ibt.buildTpl("#main");		// 分割し、モジュール化  
-	_ibt.buildTpl("#block1");		// 巨大HTMLは分割することでレスポンスアップ  
+	_ibt.buildTpl("#block1");	// 巨大HTMLは分割することでレスポンスアップ  
 	_ibt.reflect(modelData, "#main");	// 全部反映、modelDataを元に#mainをリフレッシュ  
 	_ibt.prepend(modelData, "#dataList");	// 先頭追加  
 	_ibt.append(modelData, 	"#dataList");	// 後尾追加  
