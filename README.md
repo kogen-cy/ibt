@@ -37,14 +37,16 @@ _ibt.showPage(visible)
 <div _ibt="if(_m.val1==_m.val2) continue | break">	=> loop内で条件成立の場合、次へまたは中断。※カレントdivは表示されない
 <div _ibt="for(rowdata in _m.list)">			=> リピート表示
 <div _ibt="for(var idx=0; idx<_m.list.length; idx++;)">	=> リピート表示
-<div _ibt="for(var idx=0; idx<_m.list.length; idx++;) var row = _m.list[idx]">	=> 子供要素にて変数rowが使える
-<div _ibt="exttpl('http://test.com/block1.html', {q:'v'})">	=> 外部html templateを取得し、置き換える。共通template化可能
-<div _ibt="_DUMMY">					=> _DUMMY予約語、templateから当該要素を対象外にする
+<div _ibt="for(var idx=0; idx<_m.list.length; idx++;) var row=_m.list[idx]">	=> 子供要素にて変数rowが使える
+<div _ibt="exttpl('http://test.com/block1.html', {q:'v'})">			=> 外部html templateを取得し、置き換える。共通template化可能
+<div _ibt="_DUMMY">								=> _DUMMY予約語、templateから当該要素を対象外にする
 
 <td>{{# _m.columnValue #}}</td>	  => {{# #}} そのまま表示
 <td>{{@ _m.columnValue @}}</td>	  => {{@ @}} htmlEncodeして表示
-                                     {{% %}} template(HTML)内部にてjavaScript記述、<tr><td>など子elementに記述する場合はコメント<!-- -->で囲む必要あり
-                                              が！JAVASCRIPTエリアにて業務データ処理させ、templateではロジックはゴリゴリ書かない方が良いかと
+                                     {{% %}} template(HTML)内部にてjavaScript記述
+				             <tr><td>など子elementに記述する場合はコメント<!-- -->で囲む必要あり
+                                             が！JAVASCRIPTエリアにて業務データ処理させるべきであり、
+					     template(HTML)ではロジックはゴリゴリ書かない方が良いかと
 ```
 ##### 例） JAVASCRIPT  
 ```
