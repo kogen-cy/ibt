@@ -38,7 +38,7 @@ _ibt.showPage(visible)
 <div _ibt="for(rowdata in _m.list)">			=> リピート表示
 <div _ibt="for(var idx=0; idx<_m.list.length; idx++;)">	=> リピート表示
 <div _ibt="for(var idx=0; idx<_m.list.length; idx++;) var row = _m.list[idx]">	=> 子供要素にて変数rowが使える
-<div _ibt="exttpl('http://test.com/block1.html', {})">	=> 外部html templateを取得し、置き換える。共通template化可能
+<div _ibt="exttpl('http://test.com/block1.html', {q:'v'})">	=> 外部html templateを取得し、置き換える。共通template化可能
 <div _ibt="_DUMMY">					=> _DUMMY予約語、templateから当該要素を対象外にする
 
 <td>{{# _m.columnValue #}}</td>	  => {{# #}} そのまま表示
