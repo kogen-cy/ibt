@@ -15,7 +15,7 @@ Is Boring Template engine?
   
 ##### 機能一覧：  
 _ibt.buildTpl(tplSelector)							テンプレート範囲指定。selectorは標準CSSセレクタをサポート  
-_ibt.reflect(modelData, tplSelector, tarSelector)	データとtplSelectorのhtmlからtarSelectorに描画、tarSelector空時はtplSelectorに描画  
+_ibt.reflect(modelData, tplSelector, tarSelector)	データとtplSelectorのhtmlからtarSelectorに描画、tarSelector指定なしの場合はtplSelectorに描画  
 _ibt.prepend(modelData, tplSelector, tarSelector)	描画結果をtarSelectorの先頭に追加  
 _ibt.append(modelData, tplSelector, tarSelector)	描画結果をtarSelectorの後尾に追加  
 _ibt.remove(tarSelector)							elementを削除  
