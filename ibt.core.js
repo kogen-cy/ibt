@@ -2,8 +2,12 @@
 @author kogen.cy
 @author y.cycau@gmail.com
 @see "https://github.com/kogen-cy/ibt"
-@version 1.0
+@version 2.1
 */
+
+function IsBoringTemplate(element) {
+	this.rootElement = element;
+}
 
 (function (global) {
 
@@ -96,7 +100,10 @@
 		return function() {return "[error!] buildParts: not found target. " + selector;};
 	}
 
-	var urlStringify = function (url, queryMap) {
+	/*********************************************************/
+	var fn = IsBoringTemplate.prototype;
+
+	fn.urlStringify = function (url, queryMap) {
 		if (!queryMap) return url;
 		if (!Object.keys(queryMap).length) return url;
 
@@ -105,61 +112,12 @@
 		}).join("&");
 	}
 
-	/*********************************************************/
-	function IsBoringTemplate() {}
-	var fn = IsBoringTemplate.prototype;
-
-	/*****
-	 * HTTP request JSON
-	 * 	 GET : default
-	 * 	 POST: set paramMap to {_method:'POST'}
-	 *****/
-	fn.http = function(url, paramMap, onSuccess, onError) {
-		var ibtInstance = this;
-		var method = "GET";
-
-		if (paramMap) {
-			if (paramMap._method) {
-				method = paramMap._method.toUpperCase();
-				delete paramMap._method;
-			}
-			if (method == "GET") {
-				url = urlStringify(url, paramMap);
-				paramMap = null;
-			}
-		}
-		var xhr = new XMLHttpRequest();
-		xhr.onload = function() {
-			var jsonResponse;
-			try{
-				jsonResponse = JSON.parse(xhr.response)
-			}catch (e) {
-				jsonResponse = {};
-				jsonResponse.response = xhr.response;
-			}
-			JSON.parse(xhr.response);
-			if (xhr.status == 200) {
-				if (onSuccess) onSuccess.call(ibtInstance, jsonResponse, xhr.status);
-				return;
-			}
-			if (onError) onError.call(ibtInstance, jsonResponse, xhr.status);
-			console.log("[error!] http " + method + " " + url + " status[" + xhr.status + "]");
-		}
-		xhr.onerror = function() {
-			if (onError) onError.call(ibtInstance, null, 0);
-			console.log("[error!] http " + method + " " + url + " status[failed]");
-		}
-		xhr.open(method, url);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		//xhr.responseType = 'json';
-		xhr.send(method == "POST" ? JSON.stringify(queryMap) : null);
-	}
 	/*****
 	 * external template(synchronized HTTP)
 	 * @deprecated, use $.load() instead
 	 *****/
 	fn.exttpl = function(url, queryMap) {
-		url = urlStringify(url, queryMap);
+		url = this.urlStringify(url, queryMap);
 		if (_CACHE.html[url]) return _CACHE.html[url];
 
 		var request = new XMLHttpRequest();
@@ -288,7 +246,7 @@
 	 *****/
 	fn.buildTpl = function(tplSelector) {
 		tplSelector = tplSelector || "body";
-		var tpl = document.querySelector(tplSelector);
+		var tpl = this.rootElement.querySelector(tplSelector);
 
 		var strHtml = tpl.innerHTML;
 		_CACHE.html[tplSelector] = strHtml;
@@ -301,7 +259,7 @@
 	fn.reflect = function(modelData, tplSelector, tarSelector) {
 		tplSelector = tplSelector || 'body';
 		var tplFunc = _CACHE.func[tplSelector] || buildParts.call(this, tplSelector);
-		var element = document.querySelector(tarSelector || tplSelector)
+		var element = this.rootElement.querySelector(tarSelector || tplSelector)
 		if (element) element.innerHTML = tplFunc.call(this, modelData);
 		else console.log("[error!] reflect: target not exists. " + (tarSelector || tplSelector));
 	}
@@ -311,7 +269,7 @@
 	fn.prepend = function(modelData, tplSelector, tarSelector) {
 		tplSelector = tplSelector || 'body';
 		var tplFunc = _CACHE.func[tplSelector] || buildParts.call(this, tplSelector);
-		var element = document.querySelector(tarSelector || tplSelector);
+		var element = this.rootElement.querySelector(tarSelector || tplSelector);
 		if (element) element.insertAdjacentHTML('afterbegin', tplFunc.call(this, modelData));
 		else console.log("[error!] prepend: target not exists. " + (tarSelector || tplSelector));
 	}
@@ -321,7 +279,7 @@
 	fn.append = function(modelData, tplSelector, tarSelector) {
 		tplSelector = tplSelector || 'body';
 		var tplFunc = _CACHE.func[tplSelector] || buildParts.call(this, tplSelector);
-		var element = document.querySelector(tarSelector || tplSelector);
+		var element = this.rootElement.querySelector(tarSelector || tplSelector);
 		if (element) element.insertAdjacentHTML('beforeend', tplFunc.call(this, modelData));
 		else console.log("[error!] append: target not exists. " + (tarSelector || tplSelector));
 	}
@@ -329,80 +287,35 @@
 	 * remove target
 	 *****/
 	fn.remove = function(tarSelector) {
-		var element = document.querySelector(tarSelector);
+		var element = this.rootElement.querySelector(tarSelector);
 		if (element) element.remove();
 		else console.log("[error!] remove: target not exists. " + tarSelector);
 	}
 	/*****
-	 * request HTTP & replace inner contents
-	 *****/
-	fn.httpReflect = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
-		var onSuccess = function(jsonResponse) {
-			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.reflect(jsonResponse, tplSelector, tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
-		}
-		this.http(urlStr, paramMap, onSuccess, onError);
-	}
-	/*****
-	 * request HTTP & prepend to inner contents
-	 *****/
-	fn.httpPrepend = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
-		var onSuccess = function(jsonResponse) {
-			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.prepend(jsonResponse, tplSelector, tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
-		}
-		this.http(urlStr, paramMap, onSuccess, onError);
-	}
-	/*****
-	 * request HTTP & append to inner contents
-	 *****/
-	fn.httpAppend = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
-		var onSuccess = function(jsonResponse) {
-			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.append(jsonResponse, tplSelector, tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
-		}
-		this.http(urlStr, paramMap, onSuccess, onError);
-	}
-	/*****
-	 * request HTTP & remove target
-	 *****/
-	fn.httpRemove = function(urlStr, paramMap, tarSelector, dataProcess, dataProcessOnErr) {
-		var onSuccess = function(jsonResponse) {
-			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.remove(tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
-		}
-		this.http(urlStr, paramMap, onSuccess, onError);
-	}
-	/*****
 	 * show | off body 
 	 *****/
-	fn.showPage = function(visible) {
-		var body = document.querySelector("body");
+	fn.show = function(visible) {
+		var body = this.rootElement.querySelector("body");
 		if (body) {
 			if (visible === false) {
 				body.style.visibility = "hidden";
 				return;
 			}
 			body.style.visibility = "visible";
+			return;
 		}
+
+		if (visible === false) {
+			this.rootElement.style.visibility = "hidden";
+			return;
+		}
+		this.rootElement.style.visibility = "visible";
 	}
 
 	/*****
 	 * publish
 	 *****/
-	var _ibt = new IsBoringTemplate();
+	var _ibt = new IsBoringTemplate(document);
 	// CommonJS
 	if (typeof exports === 'object' && typeof module !== 'undefined') { 
 		module.exports = _ibt;
@@ -417,17 +330,17 @@
 	switch (document.readyState) {
 		case "loading":
 			document.addEventListener('DOMContentLoaded', function () {
-				_ibt.showPage(false);
+				_ibt.show(false);
 				if (typeof _ibtRun === 'function') _ibtRun();
-				_ibt.showPage(true);
+				_ibt.show(true);
 			});
 			break;
 		default : // interactive, complete
-			_ibt.showPage(false);
-			if (typeof _ibtRun === 'function') {_ibtRun(); _ibt.showPage(true); break;}
+			_ibt.show(false);
+			if (typeof _ibtRun === 'function') {_ibtRun(); _ibt.show(true); break;}
 			window.addEventListener("load", function () {
 				if (typeof _ibtRun === 'function') _ibtRun();
-				_ibt.showPage(true);
+				_ibt.show(true);
 			});
 			break;
 	}
