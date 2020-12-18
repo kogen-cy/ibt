@@ -251,7 +251,7 @@ function IsBoringTemplate(element) {
 		var strHtml = tpl.innerHTML;
 		_CACHE.html[tplSelector] = strHtml;
 		_CACHE.func[tplSelector] = this.build(this.prepare(strHtml));
-		//tpl.innerHTML = '';
+		tpl.innerHTML = '';
 	}
 	/*****
 	 * replace inner contents
@@ -295,21 +295,20 @@ function IsBoringTemplate(element) {
 	 * show | off body 
 	 *****/
 	fn.show = function(visible) {
-		var body = this.rootElement.querySelector("body");
-		if (body) {
+		if (this.rootElement.body) {
 			if (visible === false) {
-				body.style.visibility = "hidden";
-				return;
+				this.rootElement.body.style.visibility = "hidden";
+			} else {
+				this.rootElement.body.style.visibility = "visible";
 			}
-			body.style.visibility = "visible";
 			return;
 		}
 
 		if (visible === false) {
 			this.rootElement.style.visibility = "hidden";
-			return;
+		} else {
+			this.rootElement.style.visibility = "visible";
 		}
-		this.rootElement.style.visibility = "visible";
 	}
 
 	/*****

@@ -28,8 +28,8 @@
 		formStyle['top'] = "0%";
 		formStyle['left'] = "50%";
 		formStyle['z-index'] = "9999";
-		formStyle['max-width'] = "80vw";
-		formStyle['max-height'] = "80vh";
+		formStyle['max-width'] = "90vw";
+		formStyle['max-height'] = "90vh";
 		formStyle['box-sizing'] = "border-box";
 		formStyle['padding'] = "5px";
 		formStyle['border-radius'] = "5px";
@@ -54,8 +54,8 @@
 		formStyle['top'] = "50%";
 		formStyle['left'] = "50%";
 		formStyle['z-index'] = "9989";
-		formStyle['max-width'] = "80vw";
-		formStyle['max-height'] = "80vh";
+		formStyle['max-width'] = "90vw";
+		formStyle['max-height'] = "90vh";
 		formStyle['box-sizing'] = "border-box";
 		formStyle['padding'] = "5px";
 		formStyle['border-radius'] = "5px";
@@ -73,7 +73,7 @@
 	};
 	var modal = Modal.prototype;
 	
-	modal.open = function () {
+	modal.open = function() {
 		var thisInstance = this;
 
 		var form = document.createElement('div');
@@ -90,14 +90,14 @@
 			if (mode == "B") form.style['top'] = "5%";
 			container.style['visibility'] = "visible";
 			container.style['opacity'] = "1";
-		}, 100, this.mode);
+		}, 120, this.mode);
 
 		this.form = form;
 		this.container = container;
 
 		return new IsBoringTemplate(container);
 	}
-	modal.close = function () {
+	modal.close = function() {
 		if (this.mode == "B") this.form.style['top'] = "0.5%";
 		this.container.style['visibility'] = "hidden";
 		this.container.style['opacity'] = "0";
@@ -107,176 +107,180 @@
 	}
 
 	/***********************************************************/
-	var s = function (selector) {
+	var s = function(selector) {
 		return this.querySelector(selector);
 	}
-	var S = function (selector) {
+	var S = function(selector) {
 		return this.querySelectorAll(selector);
 	}
 	/*****
-	 * _ibt.get("#id")
-	 * _ibt.get("#id", valAttr)
-	 * value 0:[valAttr] 10:[_ibtVal] 20:[[_ibtValAttr]] 30:nodeValue
+	 * get value
+	 * get priority 0:[valAttr] 10:[_ibtV] 20:[[_ibtVa]] 30:value 40:innerHTML
 	 *****/
-	var get = function (selector, valAttr) {
+	var get = function(valAttr) {
 		var ele = this;
-		if (selector) ele = this.querySelector(selector);
-    	if (!ele) {
-    		error("getVal: not found target. " + selector);
-    		return null;
-    	}
 
-    	if (valAttr) return ele.getAttribute(valAttr);
-    	if (ele.hasAttribute("_ibtVal")) return ele.getAttribute("_ibtVal");
-    	if (ele.hasAttribute("_ibtValAttr")) return ele.getAttribute(ele.getAttribute("_ibtValAttr"));
-    	if (typeof ele.value !== 'undefined') return ele.value;
+		if (valAttr) return ele.getAttribute(valAttr);
+		if (ele.hasAttribute("_ibtV")) return ele.getAttribute("_ibtV");
+		if (ele.hasAttribute("_ibtVa")) return ele.getAttribute(ele.getAttribute("_ibtVa"));
+		if (typeof ele.value !== 'undefined') return ele.value;
 
-    	return ele.innerHTML;
-    }
+		return ele.innerHTML;
+	}
 	/*****
-	 * _ibt.set("#id", VAL)
-	 * _ibt.set("#id", VAL, valAttr)
-	 * value 0:[valAttr] 10:[_ibtVal] 20:[[_ibtValAttr]] 30:nodeValue
+	 * set value
+	 * set priority 0:[valAttr] 10:[_ibtV] 20:[[_ibtVa]] 30:value 40:innerHTML
 	 *****/
-	var set = function (selector, val, valAttr) {
+	var set = function (val, valAttr) {
 		var ele = this;
-		if (selector) ele = this.querySelector(selector);
-    	if (!ele) {
-    		error("setVal: not found target. " + selector);
-    		return this;
-    	}
 
-    	if (valAttr) {ele.setAttribute(valAttr, val); return this;}
-    	if (ele.hasAttribute("_ibtVal")) {ele.setAttribute("_ibtVal", val); return this;}
-    	if (ele.hasAttribute("_ibtValAttr")) {ele.setAttribute(ele.getAttribute("_ibtValAttr"), val); return this;}
-    	if (typeof ele.value !== 'undefined') {ele.value = val; return this;}
+		if (valAttr) {ele.setAttribute(valAttr, val); return this;}
+		if (ele.hasAttribute("_ibtV")) {ele.setAttribute("_ibtV", val); return this;}
+		if (ele.hasAttribute("_ibtVa")) {ele.setAttribute(ele.getAttribute("_ibtVa"), val); return this;}
+		if (typeof ele.value !== 'undefined') {ele.value = val; return this;}
 
-    	ele.innerHTML = val;
-    	return this;
-    }
+		ele.innerHTML = val;
+		return this;
+	}
 
+	var extractVal = function(valsSrc, valsTar) {
+		var isArray = valsTar instanceof Array;
+		
+		for (var key in valsSrc) {
+			if (key == "_ibt") continue;
+			if (key == "_ibtIdx") continue;
+
+			var val = valsSrc[key];
+			if (val == null) continue;
+			if (!val._ibt) {
+				if (isArray) {
+					valsTar.push(val);
+				} else {
+					valsTar[key] = val;
+				}
+				continue;
+			}
+
+			var container;
+			if (val._ibt == "M") {
+				container = {};
+			} else {
+				container = [];
+			}
+			if (isArray) {
+				valsTar.push(container);
+				extractVal(val, valsTar[valsTar.length-1]);
+			} else {
+				valsTar[key] = container;
+				extractVal(val, valsTar[key]);
+			}
+		}
+	}
 	/*****
-	 * _ibt.gets("#block") keyAttr default "_ibtKey"
-	 * _ibt.gets("#block", "id")
-	 * _ibt.gets("#block", "_ibtId", "_ibtVal")
+	 * return map values
+	 * keyAttr default _ibtK
 	 * keyAttr format "mapKey1.listKey2[].listKey3[n].[m].key4 ..."
-	 * value priority 0:[valAttr] 10:[_ibtVal] 20:[[_ibtValAttr]] 30:nodeValue
+	 * valAttr priority 0:[valAttr] 10:[_ibtV] 20:[[_ibtVa]] 30:value 40:innerHTML
 	 *****/
-	var gets = function (selector, keyAttr, valAttr) {
-    	var range = this;
-    	if (selector) range = this.querySelector(selector);
-    	if (!range) {
-    		error("getVals: not found target. " + selector);
-    		return null;
-    	}
+	var gets = function (keyAttr, valAttr) {
+		var range = this;
+		var REGlist = new RegExp(/^(.+)\[([\d|\+|\-]*)\]$/);
 
-    	var vals = {};
-    	keyAttr = keyAttr || "_ibtKey";
-    	var	elements = range.querySelectorAll("[" + keyAttr + "]");
-    	for (var idxEle=0; idxEle<elements.length; idxEle++) {
-        	var container = vals;
-        	var ele = elements[idxEle];
+		var vals = {};
+		keyAttr = keyAttr || "_ibtK";
+		var	elements = range.querySelectorAll("[" + keyAttr + "]");
+		for (var idxEle=0; idxEle<elements.length; idxEle++) {
+			var container = vals;
+			var ele = elements[idxEle];
 
-        	var key;
-    		var keys = ele.getAttribute(keyAttr).split(".");
-    		var maxIdx = keys.length - 1;
-    		for (var idx=0; idx<=maxIdx; idx++) {
-    			key = keys[idx];
-    			
-    			if (idx == maxIdx) {
-            		if (key.endsWith("]")) {
-            			var m = key.match(/(.+)\[(\d*)\]$/);
-            			if (m[1]) {
-                			if (!container[m[1]]) container[m[1]] = [];
-                			container = container[m[1]];
-            			}
-        				if (m[2] == "+") {
-            				container.push(null);
-            				key = container.length - 1;
-            				continue;
-        				}
-            			if (m[2]) {
-                			key = parseInt(m[2]);
-                			for (var arrayIdx = container.length-1; arrayIdx < key; arrayIdx++) {
-                				container.push(null);
-                			}
-                			continue;
-            			}
+			var key;
+			var keys = ele.getAttribute(keyAttr).split(".");
+			var maxIdx = keys.length - 1;
+			for (var idx=0; idx<=maxIdx; idx++) {
+				key = keys[idx];
+				
+				if (key.endsWith("]")) {
+					var m = key.match(REGlist);
+					if (m[1]) {
+						if (!container[m[1]]) container[m[1]] = {_ibt:"L", _ibtIdx:-1};
+						container = container[m[1]];
+					}
+					if (idx == maxIdx) {
+						if (m[2] == "+") {
+							key = container._ibtIdx += 1;
+						} else if (m[2] == "-") {
+							key = container._ibtIdx -= 1;
+						} else if (m[2] == "") {
+							key = container._ibtIdx += 1;
+						} else {// fixed index
+							key = parseInt(m[2]); 
+						}
+						if (key < 0) key = 0;
+						if (container._ibtIdx < 0) container._ibtIdx = 0;
+						break;
+					}
 
-        				container.push(null);
-        				key = container.length - 1;
-            		}
-        			continue;
-    			}
+					var listPos;
+					if (m[2] == "+") {
+						listPos = container._ibtIdx += 1;
+					} else if (m[2] == "-") {
+						listPos = container._ibtIdx -= 1;
+					} else if (m[2] == "") {
+						listPos = container._ibtIdx;
+					} else {// fixed index
+						listPos = parseInt(m[2]);
+					}
+					if (listPos < 0) listPos = 0;
+					if (container._ibtIdx < 0) container._ibtIdx = 0;
 
-        		// arrayKey[+].[] new
-    			var nextTypeList = keys[idx+1].match(/^\[(\d*)\]$/) ? true : false;
-    			if (key.endsWith("]")) {
-        			var m = key.match(/(.+)\[([\d|\+]*)\]$/);
-        			if (m[1]) {
-            			if (!container[m[1]]) container[m[1]] = [];
-            			container = container[m[1]];
-        			}
+					if (!container[listPos]) {
+						if (keys[idx+1].startsWith("[")) { //arrayKey[].[]
+							container[listPos] = {_ibt:"L", _ibtIdx:-1};
+						} else {
+							container[listPos] = {_ibt:"M"};
+						}
+					}
 
-        			var listPos = container.length - 1;
-    				if (m[2]) {
-    					if (m[2] == "+") { // add new container
-    						listPos = container.length;
-    					} else {
-    						listPos = parseInt(m[2]);
-    					}
-    				}
-    				if (listPos < 0) {
-    					error("getVals: id setting error. " + keys);
-    					continue;
-    				}
-        				
-        			if (nextTypeList) {
-        				for (var listIdx = container.length-1; listIdx < listPos; listIdx++) container.push([]);
-        			} else {
-        				for (var listIdx = container.length-1; listIdx < listPos; listIdx++) container.push({});
-        			}
-        			container = container[listPos];
-        			continue;
-        		}
+					container = container[listPos];
+					continue;
+				}
 
-        		// mapKey.[]
-        		if (nextTypeList) {
-        			if (!container[key]) container[key] = [];
-        			container = container[key];
-        			continue;
-        		}
+				if (idx == maxIdx) break;
 
-        		if (!container[key]) container[key] = {};
-        		container = container[key];
-    		}
+				if (!container[key]) {
+					if (keys[idx+1].startsWith("[")) { //mapKey.[]
+						container[key] = {_ibt:"L", _ibtIdx:-1};
+					} else {
+						container[key] = {_ibt:"M"};
+					}
+				}
+				container = container[key];
+			}
 
-    		if (valAttr) {container[key] = ele.getAttribute(valAttr); continue;}
-    		if (ele.hasAttribute("_ibtVal")) {container[key] = ele.getAttribute("_ibtVal"); continue;}
-    		if (ele.hasAttribute("_ibtValAttr")) {container[key] = ele.getAttribute(ele.getAttribute("_ibtValAttr")); continue;}
-        	if (typeof ele.value !== 'undefined') {container[key] = ele.value; return this;}
+			if (valAttr) {container[key] = ele.getAttribute(valAttr); continue;}
+			if (ele.hasAttribute("_ibtV")) {container[key] = ele.getAttribute("_ibtV"); continue;}
+			if (ele.hasAttribute("_ibtVa")) {container[key] = ele.getAttribute(ele.getAttribute("_ibtVa")); continue;}
+			if (typeof ele.value !== 'undefined') {container[key] = ele.value; return this;}
 
-    		container[key] = ele.innerHTML;
-    	}
-    	return vals;
-    }
-	var classes = function (selector) {
+			container[key] = ele.innerHTML;
+		}
+
+		var finalVals = {};
+		extractVal(vals, finalVals);
+		return finalVals;
+	}
+	var css = function () {
 		var ele = this;
-		if (selector) ele = this.querySelector(selector);
-    	if (!ele) {
-    		error("classes: not found target. " + selector);
-    		return null;
-    	}
 
-    	return ele.classList;
-    }
+		return ele.classList;
+	}
 	/*************************************************************/
 	Element.prototype.s = s;
 	Element.prototype.S = S;
 	Element.prototype.get = get;
 	Element.prototype.set = set;
 	Element.prototype.gets = gets;
-	Element.prototype.classes = classes;
+	Element.prototype.classes = css;
 	/*************************************************************/
 	var fn = IsBoringTemplate.prototype;
 	fn.error = error;
@@ -286,17 +290,108 @@
 	fn.S = function (selector) {
 		return S.call(this.rootElement, selector);
 	}
-	fn.get = function (selector, valAttr) {
-		return get.call(this.rootElement, selector, valAttr);
+	fn.gets = function (keyAttr, valAttr) {
+		return gets.call(this.rootElement, keyAttr, valAttr);
 	}
-	fn.set = function (selector, val, valAttr) {
-		return set.call(this.rootElement, selector, val, valAttr);
-	}
-	fn.gets = function (selector, keyAttr, valAttr) {
-		return gets.call(this.rootElement, selector, keyAttr, valAttr);
-	}
-	fn.classes = function (selector) {
-		return classes.call(this.rootElement, selector);
+	// overwrite;
+	var build = fn.build;
+	fn.build = function (strHtml) {
+		var tplFunc = build.call(this, strHtml);
+
+		return function(modelData){
+			var divTmp = document.createElement('div');
+			divTmp.innerHTML = tplFunc.call(this, modelData);
+			var REGlist = new RegExp(/^(.+)\[([\d|\+|\-]*)\]$/);
+			
+			var listCursor = {};
+			var elements = divTmp.querySelectorAll("[_ibtK]");
+			for (var idxEle=0; idxEle<elements.length; idxEle++) {
+				var ele = elements[idxEle];
+				var ibtKs = ele.getAttribute("_ibtK").replaceAll(" ", "").split(".");
+
+				var ibtV = modelData;
+				var listCur = listCursor;
+				var maxIdx = ibtKs.length - 1;
+				for (var idx=0; idx<=maxIdx; idx++) {
+					var key = ibtKs[idx];
+
+					if (key.endsWith("]")) {
+						var m = key.match(REGlist);
+						if (m[1]) {
+							ibtV = ibtV[m[1]];
+							if (typeof ibtV == "undefined" || ibtV == null) {
+								ibtV = "";
+								break;
+							}
+							if (!listCur[m[1]]) listCur[m[1]] = {_ibtIdx:-1};
+							listCur = listCur[m[1]];
+						}
+						if (typeof ibtV.length == "undefined") {
+							ibtV = "";
+							break;
+						}
+
+						if (idx==maxIdx) {
+							var listPos;
+							if (m[2] == "+") {
+								listPos = listCur._ibtIdx += 1;
+							} else if (m[2]== "-") {
+								listPos = listCur._ibtIdx -= 1;
+							} else if (m[2]== "") {
+								listPos = listCur._ibtIdx += 1;
+							} else {
+								listPos = parseInt(m[2]);
+							}
+
+							if (listCur._ibtIdx <  0) listCur._ibtIdx = -1;
+							if (listCur._ibtIdx >= ibtV.length) listCur._ibtIdx = ibtV.length;
+							if (listPos < 0 || listPos >= ibtV.length) {
+								ibtV = "";
+							} else {
+								ibtV = ibtV[listPos];
+							}
+							break;
+						}
+
+						var listPos;
+						if (m[2] == "+") {
+							listPos = listCur._ibtIdx += 1;
+						} else if (m[2]== "-") {
+							listPos = listCur._ibtIdx -= 1;
+						} else if (m[2]== "") {
+							listPos = listCur._ibtIdx;
+						} else {
+							listPos = parseInt(m[2]);
+						}
+
+						if (listCur._ibtIdx <  0) listCur._ibtIdx = -1;
+						if (listCur._ibtIdx >= ibtV.length) listCur._ibtIdx = ibtV.length;
+						if (listPos < 0 || listPos >= ibtV.length) {
+							ibtV = "";
+							break;
+						}
+
+						ibtV = ibtV[listPos];
+						if (!listCur[listPos]) listCur[listPos] = {_ibtIdx:-1};
+						listCur = listCur[listPos];
+						continue;
+					}
+					
+					ibtV = ibtV[key];
+					if (typeof ibtV == "undefined" || ibtV == null) {ibtV = ""; break;}
+					if (idx==maxIdx) break;
+
+					if (!listCur[key]) listCur[key] = {_ibtIdx:-1};
+					listCur = listCur[key];
+				}
+
+				if (ele.hasAttribute("_ibtV")) {ele.setAttribute("_ibtV", ibtV); continue;}
+				if (ele.hasAttribute("_ibtVa")) {ele.setAttribute(ele.getAttribute("_ibtVa"), ibtV); continue;}
+				if (typeof ele.value !== 'undefined') {ele.value = ibtV; continue;}
+				ele.innerHTML = ibtV;
+			}
+			return divTmp.innerHTML;
+		}
 	}
 	/*****
 	 * HTTP request
@@ -348,7 +443,7 @@
 		}
 		xhr.onerror = function() {
 			if (onError) onError.call(ibtInstance, null, 0);
-			console.log("[error!] http " + method + " " + url + " status[failed]");
+			error("http: " + method + " " + url + " status[failed]");
 		}
 		xhr.open(method, url);
 		xhr.setRequestHeader("Content-Type", "application/json");
@@ -410,18 +505,18 @@
 	/*****
 	 * create new MsgBox
 	 *****/
-	fn.newMsgBox = function (selector, modelData, selectorYes, selectorCancel, selectorClose, selectorNo) {
+	fn.newMsgbox = function (selector, modelData, selectorYes, selectorCancel, selectorClose, selectorNo) {
 		var html = this.s(selector).innerHTML;
 		html = this.build(this.prepare(html)).call(this, modelData);
-    	return new Modal("B", html, selectorYes, selectorCancel, selectorClose, selectorNo);
-    }
+		return new Modal("B", html, selectorYes, selectorCancel, selectorClose, selectorNo);
+	}
 	/*****
 	 * create new Dialog
 	 *****/
 	fn.newModal = function (url, queryMap, modelData, selectorYes, selectorCancel, selectorClose, selectorNo) {
 		var html = this.exttpl(url, queryMap);
 		html = this.build(this.prepare(html)).call(this, modelData);
-    	return new Modal("M", html, selectorYes, selectorCancel, selectorClose, selectorNo);
-    };
+		return new Modal("M", html, selectorYes, selectorCancel, selectorClose, selectorNo);
+	};
 
 })(this);
