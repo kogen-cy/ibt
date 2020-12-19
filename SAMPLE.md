@@ -3,8 +3,8 @@
 ##### functions of core  
 ```
 _ibt.reflect(modelDataMap, selector) // embed data to selector's content
-_ibt.prepend(modelDataMap, selector) // embed data and prepend selector's content
-_ibt.append(modelDataMap, selector) // embed data and append selector's content
+_ibt.prepend(modelDataMap, selector) // embed data and prepend to selector's content
+_ibt.append(modelDataMap, selector) // embed data and append to selector's content
 _ibt.remove(selector) // remove selector's content
 
 _ibt.build(strHtml) // return function of html generator
