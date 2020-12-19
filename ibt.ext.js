@@ -22,7 +22,7 @@
 	};
 	var modal = Modal.prototype;
 	
-	modal.open = function() {
+	modal.open = function(closeBtn) {
 		var thisInstance = this;
 
 		var form = document.createElement('div');
@@ -36,6 +36,9 @@
 		if (this.autoClose) {
 			form.onclick = function(e) {e.stopPropagation();}
 			container.onclick = function() {thisInstance.close();}
+		}
+		if (closeBtn) {
+			form.querySelector(closeBtn).onclick = function() {thisInstance.close();}
 		}
 
 		document.body.appendChild(container);
@@ -420,10 +423,10 @@
 	/*****
 	 * request HTTP & replace inner contents
 	 *****/
-	fn.httpReflect = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.reflectR = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.reflect(jsonResponse, tplSelector, tarSelector);
+			if (jsonResponse) this.reflect(jsonResponse, tplSelector, tarSelector);
 		}
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
@@ -433,10 +436,10 @@
 	/*****
 	 * request HTTP & prepend to inner contents
 	 *****/
-	fn.httpPrepend = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.prependR = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.prepend(jsonResponse, tplSelector, tarSelector);
+			if (jsonResponse) this.prepend(jsonResponse, tplSelector, tarSelector);
 		}
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
@@ -446,10 +449,10 @@
 	/*****
 	 * request HTTP & append to inner contents
 	 *****/
-	fn.httpAppend = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.appendR = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.append(jsonResponse, tplSelector, tarSelector);
+			if (jsonResponse) this.append(jsonResponse, tplSelector, tarSelector);
 		}
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
@@ -459,10 +462,10 @@
 	/*****
 	 * request HTTP & remove target
 	 *****/
-	fn.httpRemove = function(urlStr, paramMap, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.removeR = function(urlStr, paramMap, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
-			this.remove(tarSelector);
+			if (jsonResponse) this.remove(tarSelector);
 		}
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
@@ -508,7 +511,6 @@
 	fn.newModal = function (url, queryMap, modelData) {
 		var html = this.exttpl(url, queryMap);
 		html = this.build(html).call(this, modelData);
-		this.processing(false);
 		return new Modal(html, "modal", true);
 	};
 
