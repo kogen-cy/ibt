@@ -2,37 +2,37 @@
 
 ##### functions of core  
 ```
-_ibt.reflect(modelDataMap, selector) embed data to selector's content
-_ibt.prepend(modelDataMap, selector) embed data and prepend selector's content
-_ibt.append(modelDataMap, selector) embed data and append selector's content
-_ibt.remove(selector) remove selector's content
+_ibt.reflect(modelDataMap, selector) // embed data to selector's content
+_ibt.prepend(modelDataMap, selector) // embed data and prepend selector's content
+_ibt.append(modelDataMap, selector) // embed data and append selector's content
+_ibt.remove(selector) // remove selector's content
 
-_ibt.build(strHtml) return function of html generator
-_ibt.exttpl(url, queryMap) call http and return html
-_ibt.encode(strHtml) encode html and embed to document when you need
+_ibt.build(strHtml) // return function of html generator
+_ibt.exttpl(url, queryMap) // call http and return html
+_ibt.encode(strHtml) // encode html and embed to document when you need
 
 ```
 
 
 ##### extended functions  
 ```
-_ibt.s(selector) return Element
-_ibt.S(selector) return Elements
-_ibt.gets(keyAttr, valAttr) return all children's value under current element
-_ibt.http(url, paramMap, onSuccess, onError) http module
-_ibt.reflectR(urlStr, paramMap, selector, dataProcess) embed http data to selector's content. you can define dataProcess function to process http result before embed data.
-_ibt.prependR(urlStr, paramMap, selector, dataProcess) embed http data and prepend selector's content, R means Remote
-_ibt.appendR(urlStr, paramMap, selector, dataProcess) embed http data and append selector's content
-_ibt.removeR(urlStr, paramMap, selector) remove selector's content, when http success
+_ibt.s(selector) // return Element
+_ibt.S(selector) // return Elements
+_ibt.gets(keyAttr, valAttr) // return all children's value under current element
+_ibt.http(url, paramMap, onSuccess, onError) // http module
+_ibt.reflectR(urlStr, paramMap, selector, dataProcess) // embed http data to selector's content. you can define dataProcess function to process http result before embed data.
+_ibt.prependR(urlStr, paramMap, selector, dataProcess) // embed http data and prepend selector's content, R means Remote
+_ibt.appendR(urlStr, paramMap, selector, dataProcess) // embed http data and append selector's content
+_ibt.removeR(urlStr, paramMap, selector) // remove selector's content, when http success
 
-_ibt.show(visible) show or hidden document, or modal
-_ibt.processing() show loading icon
-_ibt.newMsgBox(selector, modelData) show message box, specify selector to tell it is form of message box
-_ibt.newModal(url, queryMap, modelData) show modal, specify url to tell where to gets form of modal
+_ibt.show(visible) // show or hidden document, or modal
+_ibt.processing() // show loading icon
+_ibt.newMsgBox(selector, modelData) // show message box, specify selector to tell it is form of message box
+_ibt.newModal(url, queryMap, modelData) // show modal, specify url to tell where to gets form of modal
 ```
 
 
-##### (example  
+##### example  
 ```
 /***
  describe in html
