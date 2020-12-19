@@ -149,6 +149,10 @@ gather all value of document, or current modal
   }
   user: 'kogen-cy'
 }
+in the list type, you can move index cursor with symbol.
+to next [+]
+to previous [-]
+or specify number [n]
 
 /***
  _ibt.s("#div1").css()
