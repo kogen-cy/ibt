@@ -20,10 +20,10 @@ _ibt.s(selector) // return Element
 _ibt.S(selector) // return Elements
 _ibt.gets(keyAttr, valAttr) // return all children's value under current element
 _ibt.http(url, paramMap, onSuccess, onError) // http module
-_ibt.reflectR(urlStr, paramMap, selector, dataProcess) // embed http data to selector's content. you can define dataProcess function to process http result before embed data.
-_ibt.prependR(urlStr, paramMap, selector, dataProcess) // embed http data and prepend selector's content, R means Remote
-_ibt.appendR(urlStr, paramMap, selector, dataProcess) // embed http data and append selector's content
-_ibt.removeR(urlStr, paramMap, selector) // remove selector's content, when http success
+_ibt.reflectR(url, paramMap, selector, dataProcess) // embed http data to selector's content. you can define dataProcess function to process http result before embed data.
+_ibt.prependR(url, paramMap, selector, dataProcess) // embed http data and prepend selector's content, R means Remote
+_ibt.appendR(url, paramMap, selector, dataProcess) // embed http data and append selector's content
+_ibt.removeR(url, paramMap, selector) // remove selector's content, when http success
 
 _ibt.show(visible) // show or hidden document, or modal
 _ibt.processing() // show loading icon
