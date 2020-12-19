@@ -2,7 +2,7 @@
 @author kogen.cy
 @author y.cycau@gmail.com
 @see "https://github.com/kogen-cy/ibt"
-@version 2.1
+@version 2.7
 */
 
 (function (global) {
@@ -12,64 +12,13 @@
 		console.error("[error!] " + msg);
 	}
 
-	var msgboxStyle = function (overlayStyle, formStyle) {
-		overlayStyle['visibility'] = "hidden";
-		overlayStyle['opacity'] = "0";
-		overlayStyle['position'] = "fixed";
-		overlayStyle['top'] = "0";
-		overlayStyle['left'] = "0";
-		overlayStyle['right'] = "0";
-		overlayStyle['bottom'] = "0";
-		overlayStyle['z-index'] = "9998";
-		overlayStyle['transition-duration'] = "0.5s";
-		overlayStyle['background-color'] = "rgba(0, 0, 0, .05)";
-
-		formStyle['position'] = "fixed";
-		formStyle['top'] = "0%";
-		formStyle['left'] = "50%";
-		formStyle['z-index'] = "9999";
-		formStyle['max-width'] = "90vw";
-		formStyle['max-height'] = "90vh";
-		formStyle['box-sizing'] = "border-box";
-		formStyle['padding'] = "5px";
-		formStyle['border-radius'] = "5px";
-		formStyle['background-color'] = "#fff";
-		formStyle['transform'] = "translate(-50%, 0%)";
-		formStyle['transition-duration'] = "0.3s";
-		formStyle['border'] = "1px solid gray";
-	}
-	var modalStyle = function (overlayStyle, formStyle) {
-		overlayStyle['visibility'] = "hidden";
-		overlayStyle['opacity'] = "0";
-		overlayStyle['position'] = "fixed";
-		overlayStyle['top'] = "0";
-		overlayStyle['left'] = "0";
-		overlayStyle['right'] = "0";
-		overlayStyle['bottom'] = "0";
-		overlayStyle['z-index'] = "9988";
-		overlayStyle['transition-duration'] = "0.5s";
-		overlayStyle['background-color'] = "rgba(0, 0, 0, .25)";
-
-		formStyle['position'] = "fixed";
-		formStyle['top'] = "50%";
-		formStyle['left'] = "50%";
-		formStyle['z-index'] = "9989";
-		formStyle['max-width'] = "90vw";
-		formStyle['max-height'] = "90vh";
-		formStyle['box-sizing'] = "border-box";
-		formStyle['padding'] = "5px";
-		formStyle['border-radius'] = "5px";
-		formStyle['background-color'] = "#fff";
-		formStyle['transition-duration'] = "0.3s";
-		formStyle['transform'] = "translate(-50%, -50%)";
-	}
-
 	/*****
-	 * Modal | MsgBox
+	 * Modal | MsgBox | loading
 	 *****/
-	function Modal(mode, html) {
-		this.mode = mode; // Modal | msgBox
+	function Modal(html, cssPrefix, autoClose) {
 		this.html = html;
+		this.cssPrefix = cssPrefix;
+		this.autoClose = autoClose;
 	};
 	var modal = Modal.prototype;
 	
@@ -77,20 +26,23 @@
 		var thisInstance = this;
 
 		var form = document.createElement('div');
+		form.classList.add(this.cssPrefix + "_form");
 		form.innerHTML = this.html;
 
 		var container = document.createElement('div');
+		container.classList.add(this.cssPrefix + "_overlay");
 		container.appendChild(form);
-		this.mode == "B" ? msgboxStyle(container.style, form.style) : modalStyle(container.style, form.style);
-		form.onclick = function(e) {e.stopPropagation();}
-		container.onclick = function() {thisInstance.close();}
+		
+		if (this.autoClose) {
+			form.onclick = function(e) {e.stopPropagation();}
+			container.onclick = function() {thisInstance.close();}
+		}
 
 		document.body.appendChild(container);
-		setTimeout(function(mode) {
-			if (mode == "B") form.style['top'] = "5%";
-			container.style['visibility'] = "visible";
-			container.style['opacity'] = "1";
-		}, 120, this.mode);
+		setTimeout(function(cssPrefix) {
+			form.classList.add(cssPrefix + "_form_show");
+			container.classList.add(cssPrefix + "_overlay_show");
+		}, 120, this.cssPrefix);
 
 		this.form = form;
 		this.container = container;
@@ -98,14 +50,31 @@
 		return new IsBoringTemplate(container);
 	}
 	modal.close = function() {
-		if (this.mode == "B") this.form.style['top'] = "0.5%";
-		this.container.style['visibility'] = "hidden";
-		this.container.style['opacity'] = "0";
+		this.form.classList.remove(this.cssPrefix + "_form_show");
+		this.form.classList.add(this.cssPrefix + "_form_closing");
+		this.form.classList.remove(this.cssPrefix + "_overlay_show");
+		this.container.classList.add(this.cssPrefix + "_overlay_closing");
+
 		setTimeout(function(container) {
 			document.body.removeChild(container);
 		}, 300, this.container);
 	}
 
+	var processingIcon;
+	var processing = function(start) {
+		if (start === false) {
+			if (processingIcon) {
+				processingIcon.close();
+				processingIcon = null;
+			}
+			return;
+		}
+
+		if (processingIcon) return;
+		var processingHtml = "<span class='processing'></span>";
+		processingIcon = new Modal(processingHtml, "processing");
+		processingIcon.open();
+	}
 	/***********************************************************/
 	var s = function(selector) {
 		return this.querySelector(selector);
@@ -319,17 +288,11 @@
 						var m = key.match(REGlist);
 						if (m[1]) {
 							ibtV = ibtV[m[1]];
-							if (typeof ibtV == "undefined" || ibtV == null) {
-								ibtV = "";
-								break;
-							}
+							if (typeof ibtV == "undefined" || ibtV == null) {ibtV = ""; break;}
 							if (!listCur[m[1]]) listCur[m[1]] = {_ibtIdx:-1};
 							listCur = listCur[m[1]];
 						}
-						if (typeof ibtV.length == "undefined") {
-							ibtV = "";
-							break;
-						}
+						if (typeof ibtV.length == "undefined") {ibtV = ""; break;}
 
 						if (idx==maxIdx) {
 							var listPos;
@@ -399,6 +362,8 @@
 	 * 	 you can set paramMap to {_method:'POST', _responseType:'TEXT'}
 	 *****/
 	fn.http = function(url, paramMap, onSuccess, onError) {
+		processing();
+
 		var ibtInstance = this;
 		var method = "GET";
 		var responseType = "JSON";
@@ -436,14 +401,16 @@
 			}
 			if (xhr.status == 200) {
 				if (onSuccess) onSuccess.call(ibtInstance, response, xhr.status);
-				return;
+			} else {
+				if (onError) onError.call(ibtInstance, response, xhr.status);
+				error("http: " + method + " " + url + " status[" + xhr.status + "]");
 			}
-			if (onError) onError.call(ibtInstance, response, xhr.status);
-			error("http: " + method + " " + url + " status[" + xhr.status + "]");
+			processing(false);
 		}
 		xhr.onerror = function() {
 			if (onError) onError.call(ibtInstance, null, 0);
 			error("http: " + method + " " + url + " status[failed]");
+			processing(false);
 		}
 		xhr.open(method, url);
 		xhr.setRequestHeader("Content-Type", "application/json");
@@ -503,20 +470,46 @@
 		this.http(urlStr, paramMap, onSuccess, onError);
 	}
 	/*****
+	 * show | off body 
+	 *****/
+	fn.show = function(visible) {
+		if (this.rootElement.body) {
+			if (visible === false) {
+				this.rootElement.body.style.visibility = "hidden";
+			} else {
+				this.rootElement.body.style.visibility = "visible";
+			}
+			return this;
+		}
+
+		if (visible === false) {
+			this.rootElement.style.visibility = "hidden";
+		} else {
+			this.rootElement.style.visibility = "visible";
+		}
+		return this;
+	}
+	/*****
+	 * show processing icon
+	 *****/
+	fn.processing = processing
+
+	/*****
 	 * create new MsgBox
 	 *****/
-	fn.newMsgbox = function (selector, modelData, selectorYes, selectorCancel, selectorClose, selectorNo) {
+	fn.newMsgBox = function (selector, modelData) {
 		var html = this.s(selector).innerHTML;
-		html = this.build(this.prepare(html)).call(this, modelData);
-		return new Modal("B", html, selectorYes, selectorCancel, selectorClose, selectorNo);
+		html = this.build(html).call(this, modelData);
+		return new Modal(html, "msgbox", true);
 	}
 	/*****
 	 * create new Dialog
 	 *****/
-	fn.newModal = function (url, queryMap, modelData, selectorYes, selectorCancel, selectorClose, selectorNo) {
+	fn.newModal = function (url, queryMap, modelData) {
 		var html = this.exttpl(url, queryMap);
-		html = this.build(this.prepare(html)).call(this, modelData);
-		return new Modal("M", html, selectorYes, selectorCancel, selectorClose, selectorNo);
+		html = this.build(html).call(this, modelData);
+		this.processing(false);
+		return new Modal(html, "modal", true);
 	};
 
 })(this);

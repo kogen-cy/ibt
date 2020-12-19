@@ -2,7 +2,7 @@
 @author kogen.cy
 @author y.cycau@gmail.com
 @see "https://github.com/kogen-cy/ibt"
-@version 2.1
+@version 2.7
 */
 
 function IsBoringTemplate(element) {
@@ -46,6 +46,17 @@ function IsBoringTemplate(element) {
 	}
 	
 	var _CACHE = {html:{}, func:{}};
+	var arrangeHtml = function(strHtml) {
+		
+		var RegStart = new RegExp("(<!\\-\\-\\s*)?(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")", "g");
+		var RegClose = new RegExp("(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")(\\s*\\-\\->)?", "g");
+
+		strHtml = strHtml.replace(/^\s+|\s+$/gm, "");
+		strHtml = strHtml.replace(RegStart, function (m, cmtStart, start) {return "<!-- " + start;})
+		strHtml = strHtml.replace(RegClose, function (m, close, cmtClose) {return close + " -->";})
+
+		return strHtml;
+	}
 	/***
 	 * support only if|for in _ibt attribute
 	 * .etc
@@ -68,10 +79,17 @@ function IsBoringTemplate(element) {
 		return "[error!] syntax: " + expr;
 	}
 	
-	var buildParts = function(partsSelector) {
+	var buildTpl = function(selector) {
+		if (_CACHE.func[selector]) return _CACHE.func[selector];
+
+		if (!_CACHE.html['0000'] && document.body) {
+			_CACHE.html['0000'] = arrangeHtml(document.body.innerHTML);
+		}
+
+		var tplFunc;
 		for (var key in _CACHE.html) {
 			var strHtml = _CACHE.html[key];
-			var eleDiv = document.createElement("div");
+			var eleHtml = document.createElement("div");
 
 			var m = strHtml.match(/^\s*<([\w\d]+)/);
 			if (m) {
@@ -79,30 +97,88 @@ function IsBoringTemplate(element) {
 				var tags = containerTag.split(" ");
 				for (var idx in tags) {
 					var container = document.createElement(tags[idx]);
-					eleDiv.append(container);
-					eleDiv = container;
+					eleHtml.append(container);
+					eleHtml = container;
 				}
 			}
-			var regstr;
-			regstr = "(<!\\-\\-\\s*)?(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
-			strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, cmtStar, start) {return "<!-- " + start;})
-			regstr = "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")(\\s*\\-\\->)?";
-			strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, close, cmtClose) {return close + " -->";})
-			eleDiv.innerHTML = strHtml;
 
-			var parts = eleDiv.querySelector(partsSelector);
-			if (parts) {
-				var partsFunc = this.build(this.prepare(parts.outerHTML));
-				_CACHE.func[partsSelector] = partsFunc;
-				return partsFunc;
+			eleHtml.innerHTML = strHtml;
+			var eleTpl = eleHtml.querySelector(selector);
+			if (eleTpl) {tplFunc = this.build(eleTpl.innerHTML, true); break;}
+		}
+		
+		if (!tplFunc) tplFunc = function() {return "[error!] buildTpl: not found target. " + selector;};
+
+		return _CACHE.func[selector] = tplFunc;
+	}
+
+	var prepare = function(strHtml, arranged) {
+		if (!arranged) strHtml = arrangeHtml(strHtml)
+
+		var eleDiv = document.createElement("div");
+		var m = strHtml.match(/^\s*<([\w\d]+)/);
+		if (m) {
+			var containerTag = _TYPECONTAINER[m[1].toUpperCase()] || "div";
+			var tags = containerTag.split(" ");
+			for (var idx in tags) {
+				var container = document.createElement(tags[idx]);
+				eleDiv.append(container);
+				eleDiv = container;
 			}
 		}
-		return function() {return "[error!] buildParts: not found target. " + selector;};
+		eleDiv.innerHTML = strHtml;
+
+		var logic = {};
+		var logicKey; var idx = 0; var prefix = "_ibtL0Gic"; 
+		eleDiv.querySelectorAll("[_ibt]").forEach(function(element) {
+			var expr = element.getAttribute("_ibt").trim();
+			element.removeAttribute("_ibt");
+
+			if (expr == "_DUMMY") {
+				element.remove();
+				return;
+			}
+
+			if (expr.startsWith("exttpl(")) {
+				logicKey = prefix + ++idx + "E";
+				//element.before(_CONF.printStart + " (this.build(this." + expr + ")).call(this, _m) " + _CONF.printClose);
+				logic[logicKey] = _CONF.printStart + " (this.build(this." + expr + ")).call(this, _m) " + _CONF.printClose;
+				element.before(logicKey);
+				element.remove();
+				return;
+			}
+
+			var block = syntax(expr);
+			logicKey = prefix + ++idx + "E";
+			//element.before(encodeURIComponent(_CONF.logicStart + " " + block.start + " " + _CONF.logicClose));
+			logic[logicKey] = _CONF.logicStart + " " + block.start + " " + _CONF.logicClose;
+			element.before(logicKey);
+
+			if (block.close) {
+				logicKey = prefix + ++idx + "E";
+				//element.after(encodeURIComponent(_CONF.logicStart + " " + block.close + " " + _CONF.logicClose));
+				logic[logicKey] = _CONF.logicStart + " " + block.close + " " + _CONF.logicClose;
+				element.after(logicKey);
+			}
+		})
+
+		strHtml = eleDiv.innerHTML;
+		for (logicKey in logic) {
+			strHtml = strHtml.replace(logicKey, "<!-- " + logic[logicKey] + " -->");
+		}
+		return strHtml;
 	}
 
 	/*********************************************************/
 	var fn = IsBoringTemplate.prototype;
 
+	fn.encode = function (strHtml) {
+		strHtml = strHtml || '';
+		strHtml = strHtml.replace(/[<>"'\/]/g, function (c) { 
+			return _ENCODE[c]; 
+		});
+		return strHtml
+	};
 	fn.urlStringify = function (url, queryMap) {
 		if (!queryMap) return url;
 		if (!Object.keys(queryMap).length) return url;
@@ -130,90 +206,16 @@ function IsBoringTemplate(element) {
 			strHtml = "[error!] exttpl: " + url;
 		}
 
-		return _CACHE.html[url] = strHtml;
-	}
-
-	/*****
-	 * encode output area
-	 *****/
-	fn.encode = function (strHtml) {
-		strHtml = strHtml || '';
-		strHtml = strHtml.replace(/[<>"'\/]/g, function (c) { 
-			return _ENCODE[c]; 
-		});
-		return strHtml
-	};
-
-	/*****
-	 * @deprecated (not for public use)
-	 *****/
-	fn.prepare = function(strHtml) {
-		strHtml = strHtml.replace(/^\s+|\s+$/gm, "");
-		var eleDiv = document.createElement("div");
-
-		var m = strHtml.match(/^\s*<([\w\d]+)/);
-		if (m) {
-			var containerTag = _TYPECONTAINER[m[1].toUpperCase()] || "div";
-			var tags = containerTag.split(" ");
-			for (var idx in tags) {
-				var container = document.createElement(tags[idx]);
-				eleDiv.append(container);
-				eleDiv = container;
-			}
-		}
-		var regstr;
-		regstr = "(<!\\-\\-\\s*)?(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
-		strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, cmtStart, start) {return "<!-- " + start;})
-		regstr = "(" + _CONF.logicClose + "|" + _CONF.printClose + "|" + _CONF.printClos2 + ")(\\s*\\-\\->)?";
-		strHtml = strHtml.replace(new RegExp(regstr, "g"), function (m, close, cmtClose) {return close + " -->";})
-		eleDiv.innerHTML = strHtml;
-
-		var logic = {};
-		var logicKey; var idx = 0; var prefix = "_ibtL0Gic"; 
-		eleDiv.querySelectorAll("[_ibt]").forEach(function(element) {
-			var expr = element.getAttribute("_ibt").trim();
-			element.removeAttribute("_ibt");
-
-			if (expr == "_DUMMY") {
-				element.remove();
-				return;
-			}
-
-			if (expr.startsWith("exttpl(")) {
-				logicKey = prefix + ++idx + "E";
-				//element.before(_CONF.printStart + " (this.build(this.prepare(this." + expr + "))).call(this, _m) " + _CONF.printClose);
-				logic[logicKey] = _CONF.printStart + " (this.build(this.prepare(this." + expr + "))).call(this, _m) " + _CONF.printClose;
-				element.before(logicKey);
-				element.remove();
-				return;
-			}
-
-			var block = syntax(expr);
-			logicKey = prefix + ++idx + "E";
-			//element.before(encodeURIComponent(_CONF.logicStart + " " + block.start + " " + _CONF.logicClose));
-			logic[logicKey] = _CONF.logicStart + " " + block.start + " " + _CONF.logicClose;
-			element.before(logicKey);
-
-			if (block.close) {
-				logicKey = prefix + ++idx + "E";
-				//element.after(encodeURIComponent(_CONF.logicStart + " " + block.close + " " + _CONF.logicClose));
-				logic[logicKey] = _CONF.logicStart + " " + block.close + " " + _CONF.logicClose;
-				element.after(logicKey);
-			}
-		})
-
-		strHtml = eleDiv.innerHTML;
-		for (logicKey in logic) {
-			strHtml = strHtml.replace(logicKey, "<!-- " + logic[logicKey] + " -->");
-		}
-		return strHtml;
+		return _CACHE.html[url] = arrangeHtml(strHtml);
 	}
 
 	/*****
 	 * build HTML for output
 	 * how to use: _ibt.duild(strHtml).call(_ibt, modelData)
 	 *****/
-	fn.build = function (strHtml) {
+	fn.build = function (strHtml, arranged) {
+		strHtml = prepare(strHtml, arranged);
+
 		var regstr;
 		regstr  = "(<!\\-\\-\\s*)?";
 		regstr += "(" + _CONF.logicStart + "|" + _CONF.printStart + "|" + _CONF.printStar2 + ")";
@@ -242,73 +244,48 @@ function IsBoringTemplate(element) {
 	};
 
 	/*****
-	 * run first to define template(s)
-	 *****/
-	fn.buildTpl = function(tplSelector) {
-		tplSelector = tplSelector || "body";
-		var tpl = this.rootElement.querySelector(tplSelector);
-
-		var strHtml = tpl.innerHTML;
-		_CACHE.html[tplSelector] = strHtml;
-		_CACHE.func[tplSelector] = this.build(this.prepare(strHtml));
-		tpl.innerHTML = '';
-	}
-	/*****
 	 * replace inner contents
 	 *****/
 	fn.reflect = function(modelData, tplSelector, tarSelector) {
-		tplSelector = tplSelector || 'body';
-		var tplFunc = _CACHE.func[tplSelector] || buildParts.call(this, tplSelector);
 		var element = this.rootElement.querySelector(tarSelector || tplSelector)
-		if (element) element.innerHTML = tplFunc.call(this, modelData);
-		else console.log("[error!] reflect: target not exists. " + (tarSelector || tplSelector));
+		if (element) {
+			element.innerHTML = buildTpl.call(this, tplSelector).call(this, modelData);
+			return this;
+		}
+		console.log("[error!] reflect: target not exists. " + (tarSelector || tplSelector));
 	}
 	/*****
 	 * prepend to inner contents
 	 *****/
 	fn.prepend = function(modelData, tplSelector, tarSelector) {
-		tplSelector = tplSelector || 'body';
-		var tplFunc = _CACHE.func[tplSelector] || buildParts.call(this, tplSelector);
 		var element = this.rootElement.querySelector(tarSelector || tplSelector);
-		if (element) element.insertAdjacentHTML('afterbegin', tplFunc.call(this, modelData));
-		else console.log("[error!] prepend: target not exists. " + (tarSelector || tplSelector));
+		if (element) {
+			element.insertAdjacentHTML('afterbegin', buildTpl.call(this, tplSelector).call(this, modelData));
+			return this;
+		}
+		console.log("[error!] prepend: target not exists. " + (tarSelector || tplSelector));
 	}
 	/*****
 	 * append to inner contents
 	 *****/
 	fn.append = function(modelData, tplSelector, tarSelector) {
-		tplSelector = tplSelector || 'body';
-		var tplFunc = _CACHE.func[tplSelector] || buildParts.call(this, tplSelector);
 		var element = this.rootElement.querySelector(tarSelector || tplSelector);
-		if (element) element.insertAdjacentHTML('beforeend', tplFunc.call(this, modelData));
-		else console.log("[error!] append: target not exists. " + (tarSelector || tplSelector));
+		if (element) {
+			element.insertAdjacentHTML('beforeend', buildTpl.call(this, tplSelector).call(this, modelData));
+			return this;
+		}
+		console.log("[error!] append: target not exists. " + (tarSelector || tplSelector));
 	}
 	/*****
 	 * remove target
 	 *****/
 	fn.remove = function(tarSelector) {
 		var element = this.rootElement.querySelector(tarSelector);
-		if (element) element.remove();
-		else console.log("[error!] remove: target not exists. " + tarSelector);
-	}
-	/*****
-	 * show | off body 
-	 *****/
-	fn.show = function(visible) {
-		if (this.rootElement.body) {
-			if (visible === false) {
-				this.rootElement.body.style.visibility = "hidden";
-			} else {
-				this.rootElement.body.style.visibility = "visible";
-			}
-			return;
+		if (element) {
+			element.remove();
+			return this;
 		}
-
-		if (visible === false) {
-			this.rootElement.style.visibility = "hidden";
-		} else {
-			this.rootElement.style.visibility = "visible";
-		}
+		console.log("[error!] remove: target not exists. " + tarSelector);
 	}
 
 	/*****
@@ -329,17 +306,20 @@ function IsBoringTemplate(element) {
 	switch (document.readyState) {
 		case "loading":
 			document.addEventListener('DOMContentLoaded', function () {
-				_ibt.show(false);
-				if (typeof _ibtRun === 'function') _ibtRun();
-				_ibt.show(true);
+
+				if (typeof _ibtRun === 'function') {_ibtRun(); return;}
+
+				window.addEventListener("load", function () {
+					if (typeof _ibtRun === 'function') _ibtRun();
+				});
+
 			});
 			break;
 		default : // interactive, complete
-			_ibt.show(false);
-			if (typeof _ibtRun === 'function') {_ibtRun(); _ibt.show(true); break;}
+			if (typeof _ibtRun === 'function') {_ibtRun(); return;}
+
 			window.addEventListener("load", function () {
 				if (typeof _ibtRun === 'function') _ibtRun();
-				_ibt.show(true);
 			});
 			break;
 	}

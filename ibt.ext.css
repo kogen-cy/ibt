@@ -1,0 +1,174 @@
+/***
+ * message box
+ * you can define initial, showing, closing effect
+ ***/
+.msgbox_overlay {
+	visibility: hidden;
+	opacity: 0;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9998;
+	transition-duration: 0.5s;
+	background-color: rgba(0, 0, 0, .05);
+}
+.msgbox_form {
+	position: fixed;
+	top: 0%;
+	left: 50%;
+	z-index: 9999;
+	max-width: 90vw;
+	max-height: 90vh;
+	box-sizing: border-box;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: #fff;
+	transform: translate(-50%, 0%);
+	transition-duration: 0.3s;
+	border: 1px solid gray;
+}
+.msgbox_overlay_show {
+	visibility: visible;
+	opacity: 1;
+}
+.msgbox_form_show {
+	top: 5%;
+}
+.msgbox_overlay_closing {
+	visibility: hidden;
+	opacity: 0;
+}
+.msgbox_form_closing {
+	top: 0.5%;
+}
+
+/***
+ * modal
+ * you can define initial, showing, closing effect
+ ***/
+.modal_overlay {
+	visibility: hidden;
+	opacity: 0;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9988;
+	transition-duration: 0.5s;
+	background-color: rgba(0, 0, 0, .25);
+}
+.modal_form {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 9989;
+	max-width: 90vw;
+	max-height: 90vh;
+	box-sizing: border-box;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: #fff;
+	transition-duration: 0.3s;
+	transform: translate(-50%, -50%);
+}
+.modal_overlay_show {
+	visibility: visible;
+	opacity: 1;
+}
+.modal_form_show {
+}
+.modal_overlay_closing {
+	visibility: hidden;
+	opacity: 0;
+}
+.modal_form_closing {
+}
+
+/***
+ * processing
+ ***/
+.processing_overlay {
+	visibility: visible;
+	opacity: 1;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9988;
+	transition-duration: 0.3s;
+	background-color: rgba(0, 0, 0, .01);
+}
+.processing_form {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 9989;
+	max-width: 90vw;
+	max-height: 90vh;
+	box-sizing: border-box;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: #fff;
+	transform: translate(-50%, -50%);
+}
+.processing_overlay_closing {
+	visibility: hidden;
+	opacity: 0;
+}
+@-moz-keyframes processing {
+  0% {
+    -moz-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -moz-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes processing {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes processing {
+  0% {
+    -moz-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -moz-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+/* :not(:required) hides this rule from IE9 and below */
+.processing:not(:required) {
+  -moz-animation: processing 1500ms infinite linear;
+  -webkit-animation: processing 1500ms infinite linear;
+  animation: processing 1500ms infinite linear;
+  -moz-border-radius: 0.5em;
+  -webkit-border-radius: 0.5em;
+  border-radius: 0.5em;
+  -moz-box-shadow: rgba(0, 0, 51, 0.3) 1.5em 0 0 0, rgba(0, 0, 51, 0.3) 1.1em 1.1em 0 0, rgba(0, 0, 51, 0.3) 0 1.5em 0 0, rgba(0, 0, 51, 0.3) -1.1em 1.1em 0 0, rgba(0, 0, 51, 0.3) -1.5em 0 0 0, rgba(0, 0, 51, 0.3) -1.1em -1.1em 0 0, rgba(0, 0, 51, 0.3) 0 -1.5em 0 0, rgba(0, 0, 51, 0.3) 1.1em -1.1em 0 0;
+  -webkit-box-shadow: rgba(0, 0, 51, 0.3) 1.5em 0 0 0, rgba(0, 0, 51, 0.3) 1.1em 1.1em 0 0, rgba(0, 0, 51, 0.3) 0 1.5em 0 0, rgba(0, 0, 51, 0.3) -1.1em 1.1em 0 0, rgba(0, 0, 51, 0.3) -1.5em 0 0 0, rgba(0, 0, 51, 0.3) -1.1em -1.1em 0 0, rgba(0, 0, 51, 0.3) 0 -1.5em 0 0, rgba(0, 0, 51, 0.3) 1.1em -1.1em 0 0;
+  box-shadow: rgba(0, 0, 51, 0.3) 1.5em 0 0 0, rgba(0, 0, 51, 0.3) 1.1em 1.1em 0 0, rgba(0, 0, 51, 0.3) 0 1.5em 0 0, rgba(0, 0, 51, 0.3) -1.1em 1.1em 0 0, rgba(0, 0, 51, 0.3) -1.5em 0 0 0, rgba(0, 0, 51, 0.3) -1.1em -1.1em 0 0, rgba(0, 0, 51, 0.3) 0 -1.5em 0 0, rgba(0, 0, 51, 0.3) 1.1em -1.1em 0 0;
+  display: inline-block;
+  font-size: 10px;
+  width: 1em;
+  height: 1em;
+  margin: 1.5em;
+  overflow: hidden;
+  text-indent: 100%;
+}
