@@ -125,13 +125,13 @@ gather all value of document, or current modal
  ***/
 <div id="div1">
   <table>
-    <tr><td _ibtK="tbl.col11">a_1</td><td _ibtK="tbl.col2[]">b_1</td><td _ibtK="tbl.col3[+].val1">c_1</td></tr>
-    <tr><td _ibtK="tbl.col12">a_2</td><td _ibtK="tbl.col2[]">b_2</td><td _ibtK="tbl.col3[].val2" >c_2</td></tr>
-    <tr><td _ibtK="tbl.col13">a_3</td><td _ibtK="tbl.col2[]">b_3</td><td _ibtK="tbl.col3[].val3" >c_3</td></tr>
+    <tr> <td _ibtK="tbl.col11">a_1</td> <td _ibtK="tbl.col2[]">b_1</td> <td _ibtK="tbl.col3[+].val1">c_1</td> </tr>
+    <tr> <td _ibtK="tbl.col12">a_2</td> <td _ibtK="tbl.col2[]">b_2</td> <td _ibtK="tbl.col3[].val2" >c_2</td> </tr>
+    <tr> <td _ibtK="tbl.col13">a_3</td> <td _ibtK="tbl.col2[]">b_3</td> <td _ibtK="tbl.col3[].val3" >c_3</td> </tr>
 
-    <tr><td _ibtK="tbl.col11">a_4</td><td _ibtK="tbl.col2[]">b_4</td><td _ibtK="tbl.col3[+].val1">c_4</td></tr>
-    <tr><td _ibtK="tbl.col12">a_5</td><td _ibtK="tbl.col2[]">b_5</td><td _ibtK="tbl.col3[].val2" >c_5</td></tr>
-    <tr><td _ibtK="tbl.col13">a_6</td><td _ibtK="tbl.col2[]">b_6</td><td _ibtK="tbl.col3[].val3" >c_6</td></tr>
+    <tr> <td _ibtK="tbl.col11">a_4</td> <td _ibtK="tbl.col2[]">b_4</td> <td _ibtK="tbl.col3[+].val1">c_4</td> </tr>
+    <tr> <td _ibtK="tbl.col12">a_5</td> <td _ibtK="tbl.col2[]">b_5</td> <td _ibtK="tbl.col3[].val2" >c_5</td> </tr>
+    <tr> <td _ibtK="tbl.col13">a_6</td> <td _ibtK="tbl.col2[]">b_6</td> <td _ibtK="tbl.col3[].val3" >c_6</td> </tr>
   </table>
   <input type="text" _ibtK="user" value="kogen-cy">
 <div>
