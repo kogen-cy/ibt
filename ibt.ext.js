@@ -396,7 +396,7 @@
 				}
 			}catch (e) {
 				if (responseType == "JSON") {
-					response = {};
+					response = {_exception: 1};
 					response.response = xhr.responseText;
 				} else {
 					response = "ERROR!";
@@ -423,52 +423,44 @@
 	/*****
 	 * request HTTP & replace inner contents
 	 *****/
-	fn.reflectR = function(url, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.reflectR = function(url, paramMap, tplSelector, tarSelector, dataProcess, postProcess, onError) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.reflect(jsonResponse, tplSelector, tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
+			if (postProcess) postProcess(jsonResponse);
 		}
 		this.http(url, paramMap, onSuccess, onError);
 	}
 	/*****
 	 * request HTTP & prepend to inner contents
 	 *****/
-	fn.prependR = function(url, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.prependR = function(url, paramMap, tplSelector, tarSelector, dataProcess, postProcess, onError) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.prepend(jsonResponse, tplSelector, tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
+			if (postProcess) postProcess(jsonResponse);
 		}
 		this.http(url, paramMap, onSuccess, onError);
 	}
 	/*****
 	 * request HTTP & append to inner contents
 	 *****/
-	fn.appendR = function(url, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.appendR = function(url, paramMap, tplSelector, tarSelector, dataProcess, postProcess, onError) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.append(jsonResponse, tplSelector, tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
+			if (postProcess) postProcess(jsonResponse);
 		}
 		this.http(url, paramMap, onSuccess, onError);
 	}
 	/*****
 	 * request HTTP & remove target
 	 *****/
-	fn.removeR = function(url, paramMap, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.removeR = function(url, paramMap, tarSelector, dataProcess, postProcess, onError) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.remove(tarSelector);
-		}
-		var onError = function(status, jsonResponse) {
-			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
+			if (postProcess) postProcess(jsonResponse);
 		}
 		this.http(url, paramMap, onSuccess, onError);
 	}

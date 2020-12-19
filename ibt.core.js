@@ -82,8 +82,8 @@ function IsBoringTemplate(element) {
 	var buildTpl = function(selector) {
 		if (_CACHE.func[selector]) return _CACHE.func[selector];
 
-		if (!_CACHE.html['0000'] && document.body) {
-			_CACHE.html['0000'] = arrangeHtml(document.body.innerHTML);
+		if (!_CACHE.html[0] && document.body) {
+			_CACHE.html[0] = arrangeHtml(document.body.innerHTML);
 		}
 
 		var tplFunc;
