@@ -1,6 +1,6 @@
 # ibt
 Is Boring Template engine?  
-[AboutSample](/SAMPLE.md)
+[[AboutSample]](/SAMPLE.md)
 
 ## 概要:  
 つまらなさそうなjavascriptテンプレートエンジン？  
