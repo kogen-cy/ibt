@@ -41,9 +41,9 @@ _ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell wher
 
 ##### example  
 ```
-/***
- describe in html
- ***/
+/***************************
+ * description in the html *
+ ***************************/
 {{# some value #}} print [some value] as it is
 {{@ some value @}} print encoded [some value]
 {{% some javascript %}} run some javascript
@@ -76,9 +76,9 @@ _ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell wher
  ***/
 <span _ibtK="tbl.colA"></span> //see .get() and .gets() for more details
 
-/****************
- * run on load  *
-/****************
+/***************************
+ * run on load             *
+ ***************************
 _ibtRun() {    // run on document ready, define of _ibtRun function is not must.
   _ibt.reflectR("/path/service", {queryParam:"val"}, selector);
 }
