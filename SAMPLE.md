@@ -181,7 +181,7 @@ msgbox.open("#closeBtn");
 var modal = _ibt.newModal("/path/modal.html", {queryParam:"val"}, modelData);
 var ibtModal = modal.open();
 ibtModal.s("#okBtn").onclick = function() {
-  some logic?
+  some logic
 }
 ibtModal.s("#closeBtn").onclick = function() { // same as modal.open("#closeBtn");
   modal.close();
