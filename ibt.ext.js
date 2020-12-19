@@ -423,7 +423,7 @@
 	/*****
 	 * request HTTP & replace inner contents
 	 *****/
-	fn.reflectR = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.reflectR = function(url, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.reflect(jsonResponse, tplSelector, tarSelector);
@@ -431,12 +431,12 @@
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
 		}
-		this.http(urlStr, paramMap, onSuccess, onError);
+		this.http(url, paramMap, onSuccess, onError);
 	}
 	/*****
 	 * request HTTP & prepend to inner contents
 	 *****/
-	fn.prependR = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.prependR = function(url, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.prepend(jsonResponse, tplSelector, tarSelector);
@@ -444,12 +444,12 @@
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
 		}
-		this.http(urlStr, paramMap, onSuccess, onError);
+		this.http(url, paramMap, onSuccess, onError);
 	}
 	/*****
 	 * request HTTP & append to inner contents
 	 *****/
-	fn.appendR = function(urlStr, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.appendR = function(url, paramMap, tplSelector, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.append(jsonResponse, tplSelector, tarSelector);
@@ -457,12 +457,12 @@
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
 		}
-		this.http(urlStr, paramMap, onSuccess, onError);
+		this.http(url, paramMap, onSuccess, onError);
 	}
 	/*****
 	 * request HTTP & remove target
 	 *****/
-	fn.removeR = function(urlStr, paramMap, tarSelector, dataProcess, dataProcessOnErr) {
+	fn.removeR = function(url, paramMap, tarSelector, dataProcess, dataProcessOnErr) {
 		var onSuccess = function(jsonResponse) {
 			if (dataProcess) jsonResponse = dataProcess(jsonResponse);
 			if (jsonResponse) this.remove(tarSelector);
@@ -470,7 +470,7 @@
 		var onError = function(status, jsonResponse) {
 			if (dataProcessOnErr) jsonResponse = dataProcessOnErr(jsonResponse, status);
 		}
-		this.http(urlStr, paramMap, onSuccess, onError);
+		this.http(url, paramMap, onSuccess, onError);
 	}
 	/*****
 	 * show | off body 
