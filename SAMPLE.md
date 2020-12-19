@@ -91,27 +91,27 @@ _ibt.reflect(modelData, sourceSelector, targetSelector) //display on the positio
 so on on prepend(), append(), remove(), reflectR(), prependR(), appendR(), removeR()
 
 /***
- _ibt.s("#div1").get()
+ _ibt.s("#span1").get()
  ***/
-<div id="div1" _ibtV="val1" _ibtVa="size" size="val2" value="val3">val4</div>
+<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3">val4</span>
 =>val1
-<div id="div1" _ibtVa="size" size="val2" value="val3">val4</div>
+<span id="span1" _ibtVa="size" size="val2" value="val3">val4</span>
 =>val2
-<div id="div1" size="val2" value="val3">val4</div>
+<span id="span1" size="val2" value="val3">val4</span>
 =>val3
-<div id="div1" size="val2">val4</div>
+<span id="span1" size="val2">val4</span>
 =>val4
 
 /***
- _ibt.s("#div1").get("attrX")
+ _ibt.s("#span1").get("attrX")
  ***/
-<div id="div1" _ibtV="val1" _ibtVa="size" size="val2" value="val3">val4</div>
+<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3">val4</span>
 =>undefined
-<div id="div1" _ibtV="val1" _ibtVa="size" size="val2" value="val3" attrX="valX">val4</div>
+<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3" attrX="valX">val4</span>
 =>valX
 
 /***
- _ibt.s("#div1").set(val)
+ _ibt.s("#span1").set(val)
  ***/
 the priority of setting value same as .get()
 
