@@ -2,33 +2,33 @@
 
 ##### functions of core  
 ```
-_ibt.reflect(modelDataMap, selector) // embed data to selector's content
-_ibt.prepend(modelDataMap, selector) // embed data and prepend to selector's content
-_ibt.append(modelDataMap, selector) // embed data and append to selector's content
-_ibt.remove(selector) // remove selector's content
+_ibt.reflect(modelDataMap, selector) //embed data to selector's content
+_ibt.prepend(modelDataMap, selector) //embed data and prepend to selector's content
+_ibt.append(modelDataMap, selector) //embed data and append to selector's content
+_ibt.remove(selector) //remove element
 
-_ibt.build(strHtml) // return function of html generator
-_ibt.exttpl(url, queryMap) // call http and return html
-_ibt.encode(strHtml) // encode html and embed to document when you need
+_ibt.build(strHtml) //return function of html generator
+_ibt.exttpl(url, queryMap) //call http and return html
+_ibt.encode(strHtml) //encode html and embed to document when you need
 
 ```
 
 
 ##### extended functions  
 ```
-_ibt.s(selector) // return Element
-_ibt.S(selector) // return Elements
-_ibt.gets(keyAttr, valAttr) // return all children's value under current element
-_ibt.http(url, paramMap, onSuccess, onError) // http module
-_ibt.reflectR(url, paramMap, selector, dataProcess) // embed http data to selector's content. you can define dataProcess function to process http result before embed data.
-_ibt.prependR(url, paramMap, selector, dataProcess) // embed http data and prepend selector's content, R means Remote
-_ibt.appendR(url, paramMap, selector, dataProcess) // embed http data and append selector's content
+_ibt.s(selector) //select Element
+_ibt.S(selector) //select Elements
+_ibt.gets(keyAttr, valAttr) //gather all children's value under current element
+_ibt.http(url, paramMap, onSuccess, onError) //http module
+_ibt.reflectR(url, paramMap, selector, dataProcess) //embed http data to selector's content. you can define dataProcess function to process http result before embed data.
+_ibt.prependR(url, paramMap, selector, dataProcess) //embed http data and prepend selector's content, R means Remote
+_ibt.appendR(url, paramMap, selector, dataProcess) //embed http data and append selector's content
 _ibt.removeR(url, paramMap, selector) // remove selector's content, when http success
 
-_ibt.show(visible) // show or hidden document, or modal
-_ibt.processing() // show loading icon
-_ibt.newMsgBox(selector, modelData) // show message box, specify selector to tell it is form of message box
-_ibt.newModal(url, queryMap, modelData) // show modal, specify url to tell where to gets form of modal
+_ibt.show(visible) //show or hidden document, or modal
+_ibt.processing() //show loading icon
+_ibt.newMsgBox(selector, modelData) //create message box, specify selector to tell it is form of message box
+_ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell where to gets form of modal
 ```
 
 
@@ -45,22 +45,14 @@ _ibt.newModal(url, queryMap, modelData) // show modal, specify url to tell where
  display block only when the condition is true, [_m] is inputted model data
  ***/
 <div _ibt="if(_m.val1==_m.val2)">
-
-/***
- continue or break to display when under loop. current block will not to be display
- ***/
-<div _ibt="if(_m.val1==_m.val2) continue | break">
+<div _ibt="if(_m.val1==_m.val2) continue | break"> //continue or break to display when under loop. current block will not to be display
 
 /***
  loop block
  ***/
 <div _ibt="for(var idx in _m.list)">
 <div _ibt="for(var idx=0; idx<_m.list.length; idx++;)">
-
-/***
- loop with some logic, in this case the [row] can be used in child elements
- ***/
-<div _ibt="for(var idx=0; idx<_m.list.length; idx++;) var row=_m.list[idx]">
+<div _ibt="for(var idx=0; idx<_m.list.length; idx++;) var row=_m.list[idx]"> //loop with some logic, in this case the [row] can be used in child elements
 
 /***
  load remote html
@@ -75,21 +67,20 @@ _ibt.newModal(url, queryMap, modelData) // show modal, specify url to tell where
 /***
  data bind
  ***/
-<span _ibtK="tbl.colA"></span>
-see get() and gets() for details
+<span _ibtK="tbl.colA"></span> //see get() and gets() for details
 
 /***
  run on load
 /***
 _ibtRun() {    // run on document ready, _ibtRun define is not must.
-  _ibt.reflect(modelDataMap, templateSelector, targetSelector);
+  _ibt.reflectR("/path/service", {queryParam:"val"}, templateSelector);
 }
 
 /***
  show form
  ***/
-_ibt.reflect(modelDataMap, sourceSelector) display on the position of source
-_ibt.reflect(modelDataMap, sourceSelector, targetSelector) display on the position of target
+_ibt.reflect(modelDataMap, sourceSelector) //display on the position of source
+_ibt.reflect(modelDataMap, sourceSelector, targetSelector) //display on the position of target
 
 /***
  _ibt.s("#div1").get()
@@ -156,6 +147,7 @@ gather all value of document, or current modal
  ***/
 _ibt.s("#div1").css().add(str)
 _ibt.s("#div1").css().remove(str)
+_ibt.s("#div1").css().contains(str)
 
 /***
  _ibt.S(".selected")
@@ -173,19 +165,15 @@ ibtMsgbox.s("#closeBtn").onclick = function() {
 }
 
 or just
-msgbox.open("#closeBtn");
+_ibt.newMsgBox(selector, modelData).open("#closeBtn");
 
 /***
  modal
  ***/
 var modal = _ibt.newModal("/path/modal.html", {queryParam:"val"}, modelData);
-var ibtModal = modal.open();
+var ibtModal = modal.open(); //you can specify #closeBtn here
 ibtModal.s("#okBtn").onclick = function() {
   some logic
 }
-ibtModal.s("#closeBtn").onclick = function() { // same as modal.open("#closeBtn");
-  modal.close();
-}
-
 
 ```
