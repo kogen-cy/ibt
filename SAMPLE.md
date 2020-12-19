@@ -2,9 +2,9 @@
 
 ##### functions of core  
 ```
-_ibt.reflect(modelDataMap, selector) //embed data to selector's content
-_ibt.prepend(modelDataMap, selector) //embed data and prepend to selector's content
-_ibt.append(modelDataMap, selector) //embed data and append to selector's content
+_ibt.reflect(modelData, selector) //embed data to selector's content
+_ibt.prepend(modelData, selector) //embed data and prepend to selector's content
+_ibt.append(modelData, selector) //embed data and append to selector's content
 _ibt.remove(selector) //remove element
 
 _ibt.build(strHtml) //return function of html generator
@@ -18,12 +18,19 @@ _ibt.encode(strHtml) //encode html and embed to document when you need
 ```
 _ibt.s(selector) //select Element
 _ibt.S(selector) //select Elements
-_ibt.gets(keyAttr, valAttr) //gather all children's value under current element
+_ibt.s(selector).set()
+_ibt.s(selector).get()
+_ibt.s(selector).gets() //gather all children's value under current element
+_ibt.s(selector).css()
+_ibt.gets(keyAttr, valAttr) //gather all children's value of document, or current modal
 _ibt.http(url, paramMap, onSuccess, onError) //http module
-_ibt.reflectR(url, paramMap, selector, dataProcess) //embed http data to selector's content. you can define dataProcess function to process http result before embed data.
-_ibt.prependR(url, paramMap, selector, dataProcess) //embed http data and prepend selector's content, R means Remote
-_ibt.appendR(url, paramMap, selector, dataProcess) //embed http data and append selector's content
-_ibt.removeR(url, paramMap, selector) //remove element when http success
+
+//define dataProcess function to process http result before rendering html.
+//after rendering html postProcess function will be called, you can bind event here.
+_ibt.reflectR(url, paramMap, selector, dataProcess, postProcess, onError) //embed http data to selector's content, R means Remote
+_ibt.prependR(url, paramMap, selector, dataProcess, postProcess, onError) //embed http data and prepend to selector's content
+_ibt.appendR(url, paramMap, selector, dataProcess, postProcess, onError) //embed http data and append to selector's content
+_ibt.removeR(url, paramMap, selector, dataProcess, postProcess, onError) //remove element when http success
 
 _ibt.show(visible) //show or hidden document, or modal
 _ibt.processing() //show loading icon
@@ -79,9 +86,9 @@ _ibtRun() {    // run on document ready, define of _ibtRun function is not must.
 /***
  show form
  ***/
-_ibt.reflect(modelDataMap, sourceSelector) //display on the position of source
-_ibt.reflect(modelDataMap, sourceSelector, targetSelector) //display on the position of target
-prepend(), append(), remove(), reflectR(), prependR(), appendR(), removeR() and so on
+_ibt.reflect(modelData, sourceSelector) //display on the position of source
+_ibt.reflect(modelData, sourceSelector, targetSelector) //display on the position of target
+so on on prepend(), append(), remove(), reflectR(), prependR(), appendR(), removeR()
 
 /***
  _ibt.s("#div1").get()
