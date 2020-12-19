@@ -1,14 +1,15 @@
 # ibt
-Is Boring Template engine?
+Is Boring Template engine?  
+[AboutMe](/AboutMe.md)
 
-## �T�v:  
-�܂�Ȃ�������javascript�e���v���[�g�G���W���H  
-�ӊO�ƃV���v���Ŏg�����肪�ǂ������m��܂���B  
-��������HTML��ʕ\�������������Ȃ̂ɍ����̃G���W����  
-�]�v�ȊT�O�������ς������Ċw�K�R�X�g�������A�ʓ|���Ǝv��ꂽ���Ƃ���܂��񂩁H  
-###### ����  
-  - if���ŕ\����\���Afor���Ń��s�[�g�����邾���̃V���v���Ȏd�g�� 
-  - �f�U�C�i�[����̐܊p��������ꂢ��HTML���ő���ɕۂ����܂܂Ŏ��s�R�[�h�����邱�Ƃ��ł���  
-  - ������javascript�Ŏ������Ă��邽�߁A����Library�K�v�Ȃ�  
-  - ����Library�Ƒ������ǂ�  
-  - �Ȃ�ƌ����Ă��V���v���A�ȒP�I  
+## 概要:  
+つまらなさそうなjavascriptテンプレートエンジン？  
+意外とシンプルで使い勝手が良いかも知れません。  
+ただただHTML画面表示したいだけなのに今風のエンジンは  
+余計な概念がいっぱい入って学習コストが高い、面倒だと思われたことありませんか？  
+###### 特徴  
+  - if文で表示非表示、for文でリピートさせるだけのシンプルな仕組み 
+  - デザイナーさんの折角作ったきれいなHTMLを最大限に保ったままで実行コードを入れることができる  
+  - 純粋なjavascriptで実現しているため、他のLibrary必要なし  
+  - 他のLibraryと相性が良い  
+  - なんと言ってもシンプル、簡単！  
