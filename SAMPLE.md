@@ -23,7 +23,7 @@ _ibt.http(url, paramMap, onSuccess, onError) //http module
 _ibt.reflectR(url, paramMap, selector, dataProcess) //embed http data to selector's content. you can define dataProcess function to process http result before embed data.
 _ibt.prependR(url, paramMap, selector, dataProcess) //embed http data and prepend selector's content, R means Remote
 _ibt.appendR(url, paramMap, selector, dataProcess) //embed http data and append selector's content
-_ibt.removeR(url, paramMap, selector) // remove selector's content, when http success
+_ibt.removeR(url, paramMap, selector) //remove element when http success
 
 _ibt.show(visible) //show or hidden document, or modal
 _ibt.processing() //show loading icon
@@ -67,13 +67,13 @@ _ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell wher
 /***
  data bind
  ***/
-<span _ibtK="tbl.colA"></span> //see get() and gets() for details
+<span _ibtK="tbl.colA"></span> //see .get() and .gets() for more details
 
-/***
- run on load
-/***
-_ibtRun() {    // run on document ready, _ibtRun define is not must.
-  _ibt.reflectR("/path/service", {queryParam:"val"}, templateSelector);
+/****************
+ * run on load  *
+/****************
+_ibtRun() {    // run on document ready, define of _ibtRun function is not must.
+  _ibt.reflectR("/path/service", {queryParam:"val"}, selector);
 }
 
 /***
@@ -81,6 +81,7 @@ _ibtRun() {    // run on document ready, _ibtRun define is not must.
  ***/
 _ibt.reflect(modelDataMap, sourceSelector) //display on the position of source
 _ibt.reflect(modelDataMap, sourceSelector, targetSelector) //display on the position of target
+prepend(), append(), remove(), reflectR(), prependR(), appendR(), removeR() and so on
 
 /***
  _ibt.s("#div1").get()
@@ -171,7 +172,7 @@ _ibt.newMsgBox(selector, modelData).open("#closeBtn");
  modal
  ***/
 var modal = _ibt.newModal("/path/modal.html", {queryParam:"val"}, modelData);
-var ibtModal = modal.open(); //you can specify #closeBtn here
+var ibtModal = modal.open(); //also you can specify #closeBtn like open("#closeBtn")
 ibtModal.s("#okBtn").onclick = function() {
   some logic
 }
