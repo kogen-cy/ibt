@@ -1,6 +1,7 @@
 /***
  * message box
  * you can define initial, showing, closing effect
+ * @version 2.8
  ***/
 .msgbox_overlay {
 	visibility: hidden;
