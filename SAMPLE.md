@@ -95,17 +95,17 @@ so on on prepend(), append(), remove(), reflectR(), prependR(), appendR(), remov
  ***/
 <span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3">val4</span>
 =>val1
-<span id="span1" _ibtVa="size" size="val2" value="val3">val4</span>
+<span id="span1"              _ibtVa="size" size="val2" value="val3">val4</span>
 =>val2
-<span id="span1" size="val2" value="val3">val4</span>
+<span id="span1"                            size="val2" value="val3">val4</span>
 =>val3
-<span id="span1" size="val2">val4</span>
+<span id="span1"                            size="val2"             >val4</span>
 =>val4
 
 /***
  _ibt.s("#span1").get("attrX")
  ***/
-<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3">val4</span>
+<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3"             >val4</span>
 =>undefined
 <span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3" attrX="valX">val4</span>
 =>valX
