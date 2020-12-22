@@ -150,10 +150,11 @@ gather all value of document, or current modal
   user: 'kogen-cy'
 }
 in the list type, you can move index cursor with a symbol.
-to next [+]
-to previous [-]
-or specify number [n]
-in the plain list type, empty [] equals [+]
+[]   current cursor, or next when plain object
+[n]  n's value, current cursor won't to be move
+[+n] cursor move to next n, n=1 when empty
+[-n] cursor move to previous n, n=1 when empty
+[!n] cursor move to n, n=0 when empty
 
 /***
  _ibt.s("#div1").css()
