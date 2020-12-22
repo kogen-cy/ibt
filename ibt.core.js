@@ -2,7 +2,7 @@
 @author kogen.cy
 @author y.cycau@gmail.com
 @see "https://github.com/kogen-cy/ibt"
-@version 2.8
+@version 2.9
 */
 
 function IsBoringTemplate(element) {

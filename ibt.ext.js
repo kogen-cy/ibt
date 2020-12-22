@@ -2,7 +2,7 @@
 @author kogen.cy
 @author y.cycau@gmail.com
 @see "https://github.com/kogen-cy/ibt"
-@version 2.8
+@version 2.9
 */
 
 (function (global) {
@@ -115,39 +115,6 @@
 		return this;
 	}
 
-	var extractVal = function(valsSrc, valsTar) {
-		var isArray = valsTar instanceof Array;
-		
-		for (var key in valsSrc) {
-			if (key == "_ibt") continue;
-			if (key == "_ibtIdx") continue;
-
-			var val = valsSrc[key];
-			if (val == null) continue;
-			if (!val._ibt) {
-				if (isArray) {
-					valsTar.push(val);
-				} else {
-					valsTar[key] = val;
-				}
-				continue;
-			}
-
-			var container;
-			if (val._ibt == "M") {
-				container = {};
-			} else {
-				container = [];
-			}
-			if (isArray) {
-				valsTar.push(container);
-				extractVal(val, valsTar[valsTar.length-1]);
-			} else {
-				valsTar[key] = container;
-				extractVal(val, valsTar[key]);
-			}
-		}
-	}
 	/*****
 	 * return map values
 	 * keyAttr default _ibtK
@@ -155,91 +122,118 @@
 	 * valAttr priority 0:[valAttr] 10:[_ibtV] 20:[[_ibtVa]] 30:value 40:innerHTML
 	 *****/
 	var gets = function (keyAttr, valAttr) {
-		var range = this;
-		var REGlist = new RegExp(/^(.+)\[([\d|\+|\-]*)\]$/);
-
-		var vals = {};
+		var curInfo = {};
+		var modelData = {};
 		keyAttr = keyAttr || "_ibtK";
-		var	elements = range.querySelectorAll("[" + keyAttr + "]");
+		var	elements = this.querySelectorAll("[" + keyAttr + "]");
 		for (var idxEle=0; idxEle<elements.length; idxEle++) {
-			var container = vals;
 			var ele = elements[idxEle];
+			var ibtK = ele.getAttribute(keyAttr).replaceAll(" ", "");
+			ibtK = ibtK.replaceAll("[", ".[").replaceAll("..", ".");
+			var keys = ibtK.split(".");
 
-			var key;
-			var keys = ele.getAttribute(keyAttr).split(".");
+			var fullKey = "K";
+			var _CTN = modelData;
 			var maxIdx = keys.length - 1;
 			for (var idx=0; idx<=maxIdx; idx++) {
-				key = keys[idx];
+				var key = keys[idx];
 				
-				if (key.endsWith("]")) {
-					var m = key.match(REGlist);
-					if (m[1]) {
-						if (!container[m[1]]) container[m[1]] = {_ibt:"L", _ibtIdx:-1};
-						container = container[m[1]];
-					}
-					if (idx == maxIdx) {
-						if (m[2] == "+") {
-							key = container._ibtIdx += 1;
-						} else if (m[2] == "-") {
-							key = container._ibtIdx -= 1;
-						} else if (m[2] == "") {
-							key = container._ibtIdx += 1;
-						} else {// fixed index
-							key = parseInt(m[2]); 
-						}
-						if (key < 0) key = 0;
-						if (container._ibtIdx < 0) container._ibtIdx = 0;
+				if (!key.endsWith("]")) {
+					if (!(_CTN instanceof Object)) {
+						error("not a MAP. " + ibtK + "=>" + fullKey);
 						break;
 					}
 
-					var listPos;
-					if (m[2] == "+") {
-						listPos = container._ibtIdx += 1;
-					} else if (m[2] == "-") {
-						listPos = container._ibtIdx -= 1;
-					} else if (m[2] == "") {
-						listPos = container._ibtIdx;
-					} else {// fixed index
-						listPos = parseInt(m[2]);
+					if (idx == maxIdx) {
+						_CTN[key] = ele.get(valAttr);
+						break;
 					}
-					if (listPos < 0) listPos = 0;
-					if (container._ibtIdx < 0) container._ibtIdx = 0;
 
-					if (!container[listPos]) {
-						if (keys[idx+1].startsWith("[")) { //arrayKey[].[]
-							container[listPos] = {_ibt:"L", _ibtIdx:-1};
+					if (!_CTN[key]) {
+						if (keys[idx+1].startsWith("[")) {
+							_CTN[key] = [];
 						} else {
-							container[listPos] = {_ibt:"M"};
+							_CTN[key] = {};
 						}
 					}
-
-					container = container[listPos];
+					_CTN = _CTN[key];
+					fullKey += "." + key;
 					continue;
 				}
 
-				if (idx == maxIdx) break;
-
-				if (!container[key]) {
-					if (keys[idx+1].startsWith("[")) { //mapKey.[]
-						container[key] = {_ibt:"L", _ibtIdx:-1};
-					} else {
-						container[key] = {_ibt:"M"};
-					}
+				if (!(_CTN instanceof Array)) {
+					error("not a LIST. " + ibtK + "=>" + fullKey);
+					break;
 				}
-				container = container[key];
+
+				/***
+				 * []   current cursor, or next when plain object
+				 * [n]  n's value, current cursor won't to be move
+				 * [+n] cursor move to next n, n=1 when empty
+				 * [-n] cursor move to previous n
+				 * [!n] cursor move to n, and create objects when list size <= n
+				 ***/
+				var ctlNum = key.substring(1, key.length-1);
+				var cursor = curInfo[fullKey];
+				if (typeof cursor == "undefined") cursor = -1;
+				var setIdx = cursor;
+				if (ctlNum == ""){
+					if (idx==maxIdx) {
+						cursor += 1;
+						setIdx  = cursor;
+					}
+				} else if(ctlNum.startsWith("+")){
+					ctlNum = ctlNum.substring(1);
+					if (ctlNum == "") ctlNum = "1";
+					cursor += parseInt(ctlNum);
+					setIdx  = cursor;
+				} else if(ctlNum.startsWith("-")) 	{
+					ctlNum = ctlNum.substring(1);
+					if (ctlNum == "") ctlNum = "1";
+					cursor -= parseInt(ctlNum);
+					setIdx  = cursor;
+				} else if(ctlNum.startsWith("!")) {
+					ctlNum = ctlNum.substring(1);
+					if (ctlNum == "") ctlNum = "0";
+					cursor  = parseInt(ctlNum);
+					setIdx  = cursor;
+				} else {
+					setIdx  = parseInt(ctlNum);
+				}
+				if (cursor < 0) cursor = -1;
+				curInfo[fullKey] = cursor;
+
+				fullKey += "." + setIdx;
+				if (idx == maxIdx) {
+					for (var listIdx=_CTN.length-1; listIdx<(cursor-1); listIdx++) _CTN.push(null);
+					
+					if (cursor == _CTN.length) {
+						_CTN.push(ele.get(valAttr));
+					} else if (setIdx > -1 && setIdx < _CTN.length) {
+						_CTN[setIdx] = ele.get(valAttr);
+					} else {
+						error("index out of bouds. size:" + _CTN.length + " " + ibtK + "=>" + fullKey);
+					}
+					break;
+				}
+				
+				if (keys[idx+1].startsWith("[")) {
+					for (var listIdx=_CTN.length-1; listIdx<cursor; listIdx++) _CTN.push([]);
+				} else {
+					for (var listIdx=_CTN.length-1; listIdx<cursor; listIdx++) _CTN.push({});
+				}
+
+				if (setIdx > -1 && setIdx < _CTN.length) {
+					_CTN = _CTN[setIdx];
+					continue;
+				}
+				
+				error("index out of bouds. size:" + _CTN.length + " " + ibtK + "=>" + fullKey);
+				break;
 			}
-
-			if (valAttr) {container[key] = ele.getAttribute(valAttr); continue;}
-			if (ele.hasAttribute("_ibtV")) {container[key] = ele.getAttribute("_ibtV"); continue;}
-			if (ele.hasAttribute("_ibtVa")) {container[key] = ele.getAttribute(ele.getAttribute("_ibtVa")); continue;}
-			if (typeof ele.value !== 'undefined') {container[key] = ele.value; return this;}
-
-			container[key] = ele.innerHTML;
 		}
 
-		var finalVals = {};
-		extractVal(vals, finalVals);
-		return finalVals;
+		return modelData;
 	}
 	var css = function () {
 		var ele = this;
@@ -273,88 +267,94 @@
 		return function(modelData){
 			var divTmp = document.createElement('div');
 			divTmp.innerHTML = tplFunc.call(this, modelData);
-			var REGlist = new RegExp(/^(.+)\[([\d|\+|\-]*)\]$/);
 			
-			var listCursor = {};
+			var curInfo = {};
 			var elements = divTmp.querySelectorAll("[_ibtK]");
 			for (var idxEle=0; idxEle<elements.length; idxEle++) {
 				var ele = elements[idxEle];
-				var ibtKs = ele.getAttribute("_ibtK").replaceAll(" ", "").split(".");
+				var ibtK = ele.getAttribute("_ibtK").replaceAll(" ", "");
+				ibtK = ibtK.replaceAll("[", ".[").replaceAll("..", ".");
+				var keys = ibtK.split(".");
 
-				var ibtV = modelData;
-				var listCur = listCursor;
-				var maxIdx = ibtKs.length - 1;
+				var fullKey = "K";
+				var _CTN = modelData;
+				var maxIdx = keys.length - 1;
 				for (var idx=0; idx<=maxIdx; idx++) {
-					var key = ibtKs[idx];
+					var key = keys[idx];
 
-					if (key.endsWith("]")) {
-						var m = key.match(REGlist);
-						if (m[1]) {
-							ibtV = ibtV[m[1]];
-							if (typeof ibtV == "undefined" || ibtV == null) {ibtV = ""; break;}
-							if (!listCur[m[1]]) listCur[m[1]] = {_ibtIdx:-1};
-							listCur = listCur[m[1]];
-						}
-						if (typeof ibtV.length == "undefined") {ibtV = ""; break;}
-
-						if (idx==maxIdx) {
-							var listPos;
-							if (m[2] == "+") {
-								listPos = listCur._ibtIdx += 1;
-							} else if (m[2]== "-") {
-								listPos = listCur._ibtIdx -= 1;
-							} else if (m[2]== "") {
-								listPos = listCur._ibtIdx += 1;
-							} else {
-								listPos = parseInt(m[2]);
-							}
-
-							if (listCur._ibtIdx <  0) listCur._ibtIdx = -1;
-							if (listCur._ibtIdx >= ibtV.length) listCur._ibtIdx = ibtV.length;
-							if (listPos < 0 || listPos >= ibtV.length) {
-								ibtV = "";
-							} else {
-								ibtV = ibtV[listPos];
-							}
+					if (!key.endsWith("]")) {
+						if (!(_CTN instanceof Object)) {
+							error("not a MAP. " + ibtK + "=>" + fullKey);
+							_CTN = "";
 							break;
 						}
 
-						var listPos;
-						if (m[2] == "+") {
-							listPos = listCur._ibtIdx += 1;
-						} else if (m[2]== "-") {
-							listPos = listCur._ibtIdx -= 1;
-						} else if (m[2]== "") {
-							listPos = listCur._ibtIdx;
-						} else {
-							listPos = parseInt(m[2]);
-						}
-
-						if (listCur._ibtIdx <  0) listCur._ibtIdx = -1;
-						if (listCur._ibtIdx >= ibtV.length) listCur._ibtIdx = ibtV.length;
-						if (listPos < 0 || listPos >= ibtV.length) {
-							ibtV = "";
+						_CTN = _CTN[key];
+						if (typeof _CTN == "undefined") {
+							error("key not exists. " + ibtK + "=>" + fullKey);
+							_CTN = "";
 							break;
 						}
-
-						ibtV = ibtV[listPos];
-						if (!listCur[listPos]) listCur[listPos] = {_ibtIdx:-1};
-						listCur = listCur[listPos];
+						fullKey += "." + key;
 						continue;
 					}
-					
-					ibtV = ibtV[key];
-					if (typeof ibtV == "undefined" || ibtV == null) {ibtV = ""; break;}
-					if (idx==maxIdx) break;
 
-					if (!listCur[key]) listCur[key] = {_ibtIdx:-1};
-					listCur = listCur[key];
+					if (!(_CTN instanceof Array)) {
+						error("not a LIST. " + ibtK + "=>" + fullKey);
+						_CTN = "";
+						break;
+					}
+
+					/***
+					 * []   current cursor, or next when plain object
+					 * [n]  n's value, current cursor won't to be move
+					 * [+n] cursor move to next n, n=1 when empty
+					 * [-n] cursor move to previous n
+					 * [!n] cursor move to n, and create objects when list size <= n
+					 ***/
+					var ctlNum = key.substring(1, key.length-1);
+					var cursor = curInfo[fullKey];
+					if (typeof cursor == "undefined") cursor = -1;
+					var getIdx = cursor;
+					if (ctlNum == ""){
+						if (idx==maxIdx) {
+							cursor += 1;
+							getIdx  = cursor;
+						}
+					} else if(ctlNum.startsWith("+")){
+						ctlNum = ctlNum.substring(1);
+						if (ctlNum == "") ctlNum = "1";
+						cursor += parseInt(ctlNum);
+						getIdx  = cursor;
+					} else if(ctlNum.startsWith("-")) 	{
+						ctlNum = ctlNum.substring(1);
+						if (ctlNum == "") ctlNum = "1";
+						cursor -= parseInt(ctlNum);
+						getIdx  = cursor;
+					} else if(ctlNum.startsWith("!")) {
+						ctlNum = ctlNum.substring(1);
+						if (ctlNum == "") ctlNum = "0";
+						cursor  = parseInt(ctlNum);
+						getIdx  = cursor;
+					} else {
+						getIdx  = parseInt(ctlNum);
+					}
+					if (cursor < 0) cursor = -1;
+					if (cursor >= _CTN.length) cursor = _CTN.length;
+					curInfo[fullKey] = cursor;
+					
+					fullKey += "." + getIdx;
+					if (getIdx > -1 && getIdx < _CTN.length) {
+						_CTN = _CTN[getIdx];
+						continue;
+					}
+
+					error("index out of bounds. size:" + _CTN.length + " " + ibtK + "=>" + fullKey);
+					_CTN = "";
+					break;
 				}
 
-				if (ele.hasAttribute("_ibtV")) {ele.setAttribute("_ibtV", ibtV); continue;}
-				if (ele.hasAttribute("_ibtVa")) {ele.setAttribute(ele.getAttribute("_ibtVa"), ibtV); continue;}
-				if (typeof ele.value !== 'undefined') {ele.value = ibtV; continue;}
-				ele.innerHTML = ibtV;
+				ele.set(_CTN);
 			}
 			return divTmp.innerHTML;
 		}
@@ -498,7 +498,7 @@
 		return new Modal(html, "msgbox", true);
 	}
 	/*****
-	 * create new Dialog
+	 * create new Modal
 	 *****/
 	fn.newModal = function (url, queryMap, modelData) {
 		var html = this.exttpl(url, queryMap);
