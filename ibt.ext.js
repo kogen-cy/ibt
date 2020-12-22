@@ -90,28 +90,24 @@
 	 * get priority 0:[valAttr] 10:[_ibtV] 20:[[_ibtVa]] 30:value 40:innerHTML
 	 *****/
 	var get = function(valAttr) {
-		var ele = this;
+		if (valAttr) return this.getAttribute(valAttr);
+		if (this.hasAttribute("_ibtV")) return this.getAttribute("_ibtV");
+		if (this.hasAttribute("_ibtVa")) return this.getAttribute(this.getAttribute("_ibtVa"));
+		if (typeof this.value !== 'undefined') return this.value;
 
-		if (valAttr) return ele.getAttribute(valAttr);
-		if (ele.hasAttribute("_ibtV")) return ele.getAttribute("_ibtV");
-		if (ele.hasAttribute("_ibtVa")) return ele.getAttribute(ele.getAttribute("_ibtVa"));
-		if (typeof ele.value !== 'undefined') return ele.value;
-
-		return ele.innerHTML;
+		return this.innerHTML;
 	}
 	/*****
 	 * set value
 	 * set priority 0:[valAttr] 10:[_ibtV] 20:[[_ibtVa]] 30:value 40:innerHTML
 	 *****/
 	var set = function (val, valAttr) {
-		var ele = this;
+		if (valAttr) {this.setAttribute(valAttr, val); return this;}
+		if (this.hasAttribute("_ibtV")) {this.setAttribute("_ibtV", val); return this;}
+		if (this.hasAttribute("_ibtVa")) {this.setAttribute(this.getAttribute("_ibtVa"), val); return this;}
+		if (typeof this.value !== 'undefined') {this.value = val; return this;}
 
-		if (valAttr) {ele.setAttribute(valAttr, val); return this;}
-		if (ele.hasAttribute("_ibtV")) {ele.setAttribute("_ibtV", val); return this;}
-		if (ele.hasAttribute("_ibtVa")) {ele.setAttribute(ele.getAttribute("_ibtVa"), val); return this;}
-		if (typeof ele.value !== 'undefined') {ele.value = val; return this;}
-
-		ele.innerHTML = val;
+		this.innerHTML = val;
 		return this;
 	}
 
@@ -125,7 +121,7 @@
 		var curInfo = {};
 		var modelData = {};
 		keyAttr = keyAttr || "_ibtK";
-		var	elements = this.querySelectorAll("[" + keyAttr + "]");
+		var elements = this.querySelectorAll("[" + keyAttr + "]");
 		for (var idxEle=0; idxEle<elements.length; idxEle++) {
 			var ele = elements[idxEle];
 			var ibtK = ele.getAttribute(keyAttr).replaceAll(" ", "");
@@ -236,9 +232,7 @@
 		return modelData;
 	}
 	var css = function () {
-		var ele = this;
-
-		return ele.classList;
+		return this.classList;
 	}
 	/*************************************************************/
 	Element.prototype.s = s;
