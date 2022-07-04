@@ -69,7 +69,7 @@ _ibt.encode(strHtml) //encode html and embed to document when you need
 
 <span _ibm="_m.tbl.colA[,attribute|innerHTML]"></span> // you can also specify an attribute.
 
-when model is ARRAY, you can use [][+][n][<n] to control cursor.
+when model is ARRAY, you can use [][+][n][<n] to control index.
 
 /***************************
  * run on load             *
