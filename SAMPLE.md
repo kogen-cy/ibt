@@ -38,7 +38,7 @@ _ibt.encode(strHtml) //encode html and embed to document when you need
 {{% some javascript }} run some javascript
 
 /***
- display block only when the condition is true, [_m] is inputted model data
+ display block only when the condition is true, [_m] is inputted model
  ***/
 <div _ibt="if(_m.val1==_m.val2)">
 <div _ibt="if(_m.val1==_m.val2) continue | break"> //continue or break to display when under loop. current block will not to be display
@@ -61,7 +61,7 @@ _ibt.encode(strHtml) //encode html and embed to document when you need
 <div _ibt="_DUMMY">
 
 /***
- data bind
+ data bind, use _ibm, not _ibt!
  ***/
 <span _ibm="_m.tbl.colA"></span> // [_m] model  -> page
 <span _ibm="=m.tbl.colA"></span> // [=m] model <-> page
@@ -82,9 +82,10 @@ _ibt.onload() {    // run on document ready, define of _ibtRun function is not m
  reflect data to page
  ***/
 _ibt.m(modeldata).reflect(blockSelector);
+
 _ibt.reflect(blockSelector, url, paramMap);
-_ibt.reflect(blockSelector, url, paramMap, 'modelKeyToSetResponse')
-_ibt.reflect(blockSelector, url, paramMap, functionToEditResponse(model, response))
+_ibt.reflect(blockSelector, url, paramMap, 'modelKeyToSetResponse', onErrorFunction)
+_ibt.reflect(blockSelector, url, paramMap, functionToEditResponse(model, response), onErrorFunction)
 
 
 /***
