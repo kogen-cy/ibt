@@ -39,7 +39,7 @@ _ibt.encode(strHtml) //encode html and embed to document when you need
 in the outer html area, you'd better surround with <!-- -->, like this <!-- {{@ some }} -->
 
 /***
- display block only when the condition is true, [_m] is inputted model
+ display block only when the condition is true, [_m] is page model
  ***/
 <div _ibt="if(_m.val1==_m.val2)">
 <div _ibt="if(_m.val1==_m.val2) continue | break"> //continue or break to display when under loop. current block will not to be display
