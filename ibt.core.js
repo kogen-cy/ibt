@@ -48,6 +48,10 @@ function IsBoringTemplate(element) {
 	var _CACHE = {html:{}, func:{}};
 	var _PREV_DATA = null;
 
+	var error = function(msg) {
+		error("[error!] " + msg);
+	}
+
 	/***
 	 * htmlのバックアップ
 	 * document(main画面)
@@ -84,7 +88,7 @@ function IsBoringTemplate(element) {
 				return {start: expr.replace(/(.+\(.*?\))/, "$1 {"), close:"}"};
 			}
 		}
-		return "[error!] syntaxAnalyze: " + expr;
+		error("syntaxAnalyze: " + expr);
 	}
 	/*****
 	 * external template(synchronized HTTP)
@@ -101,7 +105,7 @@ function IsBoringTemplate(element) {
 		if (request.status === 200) {
 			strHtml = request.responseText;
 		} else {
-			strHtml = "[error!] exttpl: " + url;
+			error("exttpl: " + url);
 		}
 
 		return _CACHE.html[url] = strHtml;
@@ -216,13 +220,13 @@ function IsBoringTemplate(element) {
 
 			eleHtml.innerHTML = strHtml;
 			var eleTpl = eleHtml.querySelectorAll(selector);
-			if (eleTpl.length < 1) console.error("not found template area with selector [" + selector + "]");
-			if (eleTpl.length > 2) console.error("only one template area is allowed, but there is " + eleTpl.length + " with selector[" + selector + "]");
-			if (eleTpl[0].hasAttribute("_ibt")) console.error("can't specify attribute [_ibt] in root element.");
+			if (eleTpl.length < 1) error("not found template area with selector [" + selector + "]");
+			if (eleTpl.length > 2) error("only one template area is allowed, but there is " + eleTpl.length + " with selector[" + selector + "]");
+			if (eleTpl[0].hasAttribute("_ibt")) error("can't specify attribute [_ibt] in root element.");
 			if (eleTpl) {tplFunc = build(eleTpl[0].outerHTML); break;}
 		}
 		
-		if (!tplFunc) tplFunc = function() {return "[error!] buildTpl: not found target. " + selector;};
+		if (!tplFunc) error("buildTpl: not found target. " + selector);
 
 		return _CACHE.func[selector] = tplFunc;
 	}
@@ -285,18 +289,18 @@ function IsBoringTemplate(element) {
 			
 			/*** current container is a MAP ***/
 			if (!key.endsWith("]")) {
-				if (!(currContainer instanceof Object)) console.error("not a MAP. " + fullKey);
+				if (!(currContainer instanceof Object)) error("not a MAP. " + fullKey);
 
 				if (idx == maxIdx) return currContainer[key];
 
 				fullKey += "." + key;
-				if (!(key in currContainer)) console.error("container not found. " + fullKey);
+				if (!(key in currContainer)) error("container not found. " + fullKey);
 				currContainer = currContainer[key];
 				continue;
 			}
 
 			/*** current container is a Array ***/
-			if (!(currContainer instanceof Array)) console.error("not a LIST. " + fullKey);
+			if (!(currContainer instanceof Array)) error("not a LIST. " + fullKey);
 
 			/*** [], [+], [n], [<n] ***/
 			var strIdx = key.substring(1, key.length-1);
@@ -308,10 +312,10 @@ function IsBoringTemplate(element) {
 					if (currContainer.length > cursor[fullKey]) {
 						return currContainer[cursor[fullKey]];
 					}
-					console.error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
+					error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
 				}
 
-				if (currContainer.length <1) return console.error("must have at least one element. " + fullKey);
+				if (currContainer.length <1) return error("must have at least one element. " + fullKey);
 				
 				if (!(fullKey in cursor)) cursor[fullKey] = 0;
 				if (currContainer.length > cursor[fullKey]) {
@@ -319,7 +323,7 @@ function IsBoringTemplate(element) {
 					fullKey += "[" + cursor[fullKey] + "]";
 					continue;
 				}
-				console.error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
+				error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
 			}
 
 			if(strIdx == "+"){
@@ -329,7 +333,7 @@ function IsBoringTemplate(element) {
 					if (currContainer.length > cursor[fullKey]) {
 						return currContainer[cursor[fullKey]];
 					}
-					console.error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
+					error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
 				}
 				
 				if (!(fullKey in cursor)) cursor[fullKey] = -1;
@@ -339,11 +343,11 @@ function IsBoringTemplate(element) {
 					fullKey += "[" + cursor[fullKey] + "]";
 					continue;
 				}
-				console.error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
+				error("out of bounds. " + fullKey + "[" + cursor[fullKey] + "]");
 			}
 
 			if(strIdx.startsWith("<")) 	{
-				console.error("not supported syntax. " + fullKey + "[" + strIdx + "]");
+				error("not supported syntax. " + fullKey + "[" + strIdx + "]");
 			}
 
 			var numIdx  = parseInt(strIdx);
@@ -351,7 +355,7 @@ function IsBoringTemplate(element) {
 				if (currContainer.length > numIdx) {
 					return currContainer[numIdx];
 				}
-				console.error("out of bounds. " + fullKey + "[" + strIdx + "]");
+				error("out of bounds. " + fullKey + "[" + strIdx + "]");
 			}
 
 			if (currContainer.length > numIdx) {
@@ -359,7 +363,7 @@ function IsBoringTemplate(element) {
 				fullKey += "[" + numIdx + "]";
 				continue;
 			}
-			console.error("out of bounds. " + fullKey + "[" + strIdx + "]");
+			error("out of bounds. " + fullKey + "[" + strIdx + "]");
 		}
 		return currContainer;
 	}
@@ -371,7 +375,7 @@ function IsBoringTemplate(element) {
 			
 			/*** current container is a MAP ***/
 			if (!key.endsWith("]")) {
-				if (!(currContainer instanceof Object)) console.error("not a MAP. " + fullKey);
+				if (!(currContainer instanceof Object)) error("not a MAP. " + fullKey);
 
 				if (idx == maxIdx) return currContainer;
 
@@ -388,7 +392,7 @@ function IsBoringTemplate(element) {
 			}
 
 			/*** current container is a Array ***/
-			if (!(currContainer instanceof Array)) console.error("not a LIST. " + fullKey);
+			if (!(currContainer instanceof Array)) error("not a LIST. " + fullKey);
 
 			/*** [], [+], [n], [<n] ***/
 			var strIdx = key.substring(1, key.length-1);
@@ -407,7 +411,7 @@ function IsBoringTemplate(element) {
 					return currContainer;
 				}
 
-				if (currContainer.length <1) return console.error("must have at least one element. " + fullKey);
+				if (currContainer.length <1) return error("must have at least one element. " + fullKey);
 				
 				if (initArray) {
 					if (!(fullKey in initArray)) {
@@ -589,13 +593,13 @@ function IsBoringTemplate(element) {
 				if (onSuccess) onSuccess.call(ibtInstance, response, xhr.status);
 			} else {
 				if (onError) onError.call(ibtInstance, response, xhr.status);
-				console.error("http: " + method + " " + url + " status[" + xhr.status + "]");
+				error("http: " + method + " " + url + " status[" + xhr.status + "]");
 			}
 			processing(false);
 		}
 		xhr.onerror = function() {
 			if (onError) onError.call(ibtInstance, null, 0);
-			console.error("http: " + method + " " + url + " status[failed]");
+			error("http: " + method + " " + url + " status[failed]");
 			processing(false);
 		}
 		xhr.open(method, url);
@@ -628,7 +632,7 @@ function IsBoringTemplate(element) {
 	 *****/
 	var bindModel = function(blockSelector) {
 		var element = this.rootElement.querySelector(blockSelector)
-		if (!element) console.error("target block not exists. " + blockSelector);
+		if (!element) error("target block not exists. " + blockSelector);
 		element.innerHTML = buildTpl(blockSelector).call(this, this.model);
 
 		/***
@@ -815,10 +819,6 @@ function IsBoringTemplate(element) {
 		processingIcon.open();
 	}
 	fn.processing = processing
-
-
-
-
 
 
 	/*************************************************
