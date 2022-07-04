@@ -2,7 +2,7 @@
 @author kogen.cy
 @author y.cycau@gmail.com
 @see "https://github.com/kogen-cy/ibt"
-@version 3.0
+@version 2.9
 */
 
 function IsBoringTemplate(element) {
@@ -288,7 +288,7 @@ function IsBoringTemplate(element) {
 				if (idx == maxIdx) return currContainer[key];
 
 				fullKey += "." + key;
-				if (!(key in currContainer)) error("container not found. " + fullKey);
+				if (!(key in currContainer)) console.error("container not found. " + fullKey);
 				currContainer = currContainer[key];
 				continue;
 			}
@@ -634,32 +634,35 @@ function IsBoringTemplate(element) {
 		 簡略表記、_ibt="_m.key." 後続続く
 		 ***/
 		var elements = element.querySelectorAll("[_ibm]");
-		for (var ele in elements) {
+		for (var idx=0; idx<elements.length; idx++) {
+			var ele = elements[idx];
 			var ibm = ele.getAttribute('_ibm');
 			if(!ibm.endsWith(".")) continue;
 			if(!(ibm.startsWith("_m.") || ibm.startsWith("=m.") || ibm.startsWith("~m."))) continue;
 
-			perpareIbm(ele, ibm);
+			normalizeIbm(ele, ibm);
 		}
 
 		var cursor = {};
 		var elements = element.querySelectorAll("[_ibm]");
-		for (var idxEle=0; idxEle<elements.length; idxEle++) {
-			var accessKey = ibm.replaceAll(" ", "").split(',');
+		for (var idx=0; idx<elements.length; idx++) {
+			var ele = elements[idx];
+			var accessKey = ele.getAttribute('_ibm').replaceAll(" ", "").substring(3).split(',');
 			var keys = splitKey(accessKey[0]);
-			ele.val(accessKey[1] || "", tarValue(srcModel, keys, cursor));
+			ele.val(accessKey[1] || "", tarValue(this.model, keys, cursor));
 		}
 	}
-	var perpareIbm = function(element, prefix) {
+	var normalizeIbm = function(element, prefix) {
 		element.removeAttribute('_ibm');
 
 		var children = element.querySelectorAll("[_ibm]");
-		for (var ele in children) {
+		for (var idx=0; idx<children.length; idx++) {
+			var ele = children[idx];
 			var ibm = ele.getAttribute('_ibm');
 			if(ibm.startsWith("_m.") || ibm.startsWith("=m.") || ibm.startsWith("~m.")) continue; // 直設定、または設定済み
 
 			if (ibm.endsWith(".")) {
-				perpareIbm(ele, prefix + ibm);
+				normalizeIbm(ele, prefix + ibm);
 				continue;
 			}
 			ele.setAttribute('_ibm', prefix + ibm);
@@ -684,10 +687,10 @@ function IsBoringTemplate(element) {
 
 		var onSuccess = function(jsonResponse) {
 			if (!accessKeyOrFunc) {
-				for (var key in jsonResponse) model[key] = jsonResponse[key];
+				for (var key in jsonResponse) baseIbt.model[key] = jsonResponse[key];
 			} else {
 				var keys = splitKey(accessKeyOrFunc);
-				var tc = tarContainer(model, keys);
+				var tc = tarContainer(baseIbt.model, keys);
 				tc[keys[keys.length-1]] = jsonResponse;
 			}
 			bindModel.call(baseIbt, blockSelector);
