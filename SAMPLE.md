@@ -2,12 +2,21 @@
 
 ##### functions of core  
 ```
-_ibt.reflect(modelData, selector) //embed data to selector's content
-_ibt.prepend(modelData, selector) //embed data and prepend to selector's content
-_ibt.append(modelData, selector) //embed data and append to selector's content
-_ibt.remove(selector) //remove element
+_ibt.onload()
+_ibt.s(selector) // select one element
+_ibt.S(selector) // select all elements
+_ibt.m(accessKey, data) // set data to model, or get data
+_ibt.api(url, paramMap, onSuccess, onError) // call remote api
+_ibt.reflect(blockSelector, url, paramMap, accessKeyOrFunc, onError) // reflect data to page
+_ibt.forward(url, parameter, data)
+_ibt.locate(url, parameter)
+_ibt.prevdata()
 
-_ibt.build(strHtml) //return function of html generator
+_ibt.show(visible) //show or hidden document, or modal
+_ibt.processing() //show loading icon
+_ibt.newMsgBox(selector, modelData) //create message box, specify selector to tell it is form of message box
+_ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell where to gets form of modal
+
 _ibt.exttpl(url, queryMap) //call http and return html
 _ibt.encode(strHtml) //encode html and embed to document when you need
 
@@ -16,26 +25,6 @@ _ibt.encode(strHtml) //encode html and embed to document when you need
 
 ##### extended functions  
 ```
-_ibt.s(selector) //select Element
-_ibt.S(selector) //select Elements
-_ibt.s(selector).set()
-_ibt.s(selector).get()
-_ibt.s(selector).gets() //gather all children's value under current element
-_ibt.s(selector).css()
-_ibt.gets(keyAttr, valAttr) //gather all children's value of document, or current modal
-_ibt.http(url, paramMap, onSuccess, onError) //http module
-
-//define dataProcess function to process http result before rendering html.
-//after rendering html postProcess function will be called, you can bind event here.
-_ibt.reflectR(url, paramMap, selector, dataProcess, postProcess, onError) //embed http data to selector's content, R means Remote
-_ibt.prependR(url, paramMap, selector, dataProcess, postProcess, onError) //embed http data and prepend to selector's content
-_ibt.appendR(url, paramMap, selector, dataProcess, postProcess, onError) //embed http data and append to selector's content
-_ibt.removeR(url, paramMap, selector, dataProcess, postProcess, onError) //remove element when http success
-
-_ibt.show(visible) //show or hidden document, or modal
-_ibt.processing() //show loading icon
-_ibt.newMsgBox(selector, modelData) //create message box, specify selector to tell it is form of message box
-_ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell where to gets form of modal
 ```
 
 
@@ -44,9 +33,9 @@ _ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell wher
 /***************************
  * description in the html *
  ***************************/
-{{# some value #}} print [some value] as it is
-{{@ some value @}} print encoded [some value]
-{{% some javascript %}} run some javascript
+{{# some value }} print [some value] as it is
+{{@ some value }} print encoded [some value]
+{{% some javascript }} run some javascript
 
 /***
  display block only when the condition is true, [_m] is inputted model data
@@ -74,87 +63,29 @@ _ibt.newModal(url, queryMap, modelData) //create modal, specify url to tell wher
 /***
  data bind
  ***/
-<span _ibtK="tbl.colA"></span> //see .get() and .gets() for more details
+<span _ibm="_m.tbl.colA"></span> // [_m] model  -> page
+<span _ibm="=m.tbl.colA"></span> // [=m] model <-> page
+<span _ibm="~m.tbl.colA"></span> // [~m] model <-  page
+
+<span _ibm="_m.tbl.colA[,attribute|innerHTML]"></span> // you can also specify an attribute.
+
+when model is ARRAY, you can use [][+][n][<n] to control cursor.
 
 /***************************
  * run on load             *
  ***************************
-_ibtRun() {    // run on document ready, define of _ibtRun function is not must.
-  _ibt.reflectR("/path/service", {queryParam:"val"}, selector);
+_ibt.onload() {    // run on document ready, define of _ibtRun function is not must.
+  _ibt.reflect('#services', '/service/list', {searchCount: 20});
 }
 
 /***
- show form
+ reflect data to page
  ***/
-_ibt.reflect(modelData, sourceSelector) //display on the position of source
-_ibt.reflect(modelData, sourceSelector, targetSelector) //display on the position of target
-so on on prepend(), append(), remove(), reflectR(), prependR(), appendR(), removeR()
+_ibt.m(modeldata).reflect(blockSelector);
+_ibt.reflect(blockSelector, url, paramMap);
+_ibt.reflect(blockSelector, url, paramMap, 'modelKeyToSetResponse')
+_ibt.reflect(blockSelector, url, paramMap, functionToEditResponse(model, response))
 
-/***
- _ibt.s("#span1").get()
- ***/
-<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3">val4</span>
-=>val1
-<span id="span1"              _ibtVa="size" size="val2" value="val3">val4</span>
-=>val2
-<span id="span1"                            size="val2" value="val3">val4</span>
-=>val3
-<span id="span1"                            size="val2"             >val4</span>
-=>val4
-
-/***
- _ibt.s("#span1").get("attrX")
- ***/
-<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3"             >val4</span>
-=>undefined
-<span id="span1" _ibtV="val1" _ibtVa="size" size="val2" value="val3" attrX="valX">val4</span>
-=>valX
-
-/***
- _ibt.s("#span1").set(val)
- ***/
-the priority of setting value same as .get()
-
-/***
- _ibt.gets()
- ***/
-gather all value of document, or current modal
-
-/***
- _ibt.s("#div1").gets()
- ***/
-<div id="div1">
-  <table>
-    <tr> <td _ibtK="tbl.col11">a_1</td> <td _ibtK="tbl.col2[]">b_1</td> <td _ibtK="tbl.col3[+].val1">c_1</td> </tr>
-    <tr> <td _ibtK="tbl.col12">a_2</td> <td _ibtK="tbl.col2[]">b_2</td> <td _ibtK="tbl.col3[].val2" >c_2</td> </tr>
-    <tr> <td _ibtK="tbl.col13">a_3</td> <td _ibtK="tbl.col2[]">b_3</td> <td _ibtK="tbl.col3[].val3" >c_3</td> </tr>
-
-    <tr> <td _ibtK="tbl.col11">a_4</td> <td _ibtK="tbl.col2[]">b_4</td> <td _ibtK="tbl.col3[+].val1">c_4</td> </tr>
-    <tr> <td _ibtK="tbl.col12">a_5</td> <td _ibtK="tbl.col2[]">b_5</td> <td _ibtK="tbl.col3[].val2" >c_5</td> </tr>
-    <tr> <td _ibtK="tbl.col13">a_6</td> <td _ibtK="tbl.col2[]">b_6</td> <td _ibtK="tbl.col3[].val3" >c_6</td> </tr>
-  </table>
-  <input type="text" _ibtK="user" value="kogen-cy">
-<div>
-=>
-{
-  tbl:{
-    col11: 'a_4',
-    col12: 'a_5',
-    col13: 'a_6',
-    col2: ['b_1', 'b_2', 'b_3', 'b_4', 'b_5', 'b_6'],
-    col3: [
-      {val1:'c_1', val2:'c_2', val3:'c_3'},
-      {val1:'c_4', val2:'c_5', val3:'c_6'}
-    ],
-  }
-  user: 'kogen-cy'
-}
-in the list type, you can move index cursor with a symbol.
-[]   current cursor, or next when plain object
-[n]  n's value, current cursor won't to be move
-[+n] cursor move to next n, n=1 when empty
-[-n] cursor move to previous n, n=1 when empty
-[!n] cursor move to n, n=0 when empty
 
 /***
  _ibt.s("#div1").css()
