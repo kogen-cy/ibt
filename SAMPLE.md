@@ -36,7 +36,7 @@ _ibt.encode(strHtml) //encode html and embed to document when you need
 {{# some value }} print [some value] as it is
 {{@ some value }} print encoded [some value]
 {{% some javascript }} run some javascript
-in the outer html area, you'd better surround with <!-- -->, like this <!-- {{@ some }}-->
+in the outer html area, you'd better surround with <!-- -->, like this <!-- {{@ some }} -->
 
 /***
  display block only when the condition is true, [_m] is inputted model
