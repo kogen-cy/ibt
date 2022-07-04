@@ -75,7 +75,7 @@ when model is ARRAY, you can use [][+][n][<n] to control index.
 /***************************
  * run on load             *
  ***************************
-_ibt.onload() {    // run on document ready, define of _ibtRun function is not must.
+_ibt.onload() {    // run on document ready
   _ibt.reflect('#services', '/service/list', {searchCount: 20});
 }
 
