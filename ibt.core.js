@@ -2,7 +2,7 @@
 @author kogen.cy
 @author y.cycau@gmail.com
 @see "https://github.com/kogen-cy/ibt"
-@version 2.9
+@version 3.0
 */
 
 function IsBoringTemplate(element) {
@@ -259,14 +259,16 @@ function IsBoringTemplate(element) {
 	 *****/
 	var extractModel = function (srcModel) {
 		var initArray = {};
-		var elements = this.querySelectorAll("[_ibt]");
-		for (var idxEle=0; idxEle<elements.length; idxEle++) {
-			var ele = elements[idxEle];
-			var accessKey = (ele.getAttribute('_ibm').replaceAll(" ", "")+',').split(',');
+		var elements = this.querySelectorAll("[_ibm]");
+		for (var idx=0; idx<elements.length; idx++) {
+			var ele = elements[idx];
+			var ibm = ele.getAttribute('_ibm');
+			if (!ibm.startsWith("=m.") && !ibm.startsWith("~m.")) continue;
 
+			var accessKey = ibm.replaceAll(" ", "").substring(3).split(',');
 			var keys = splitKey(accessKey[0]);
 			var tc = tarContainer(srcModel, keys, initArray);
-			tc[keys[keys.length-1]] = ele.val(accessKey[1]);
+			tc[keys[keys.length-1]] = ele.val(accessKey[1] || '');
 		}
 
 		return srcModel;
@@ -647,9 +649,12 @@ function IsBoringTemplate(element) {
 		var elements = element.querySelectorAll("[_ibm]");
 		for (var idx=0; idx<elements.length; idx++) {
 			var ele = elements[idx];
-			var accessKey = ele.getAttribute('_ibm').replaceAll(" ", "").substring(3).split(',');
+			var ibm = ele.getAttribute('_ibm');
+			if(!ibm.startsWith("_m.") && !ibm.startsWith("=m.")) continue;
+
+			var accessKey = ibm.replaceAll(" ", "").substring(3).split(',');
 			var keys = splitKey(accessKey[0]);
-			ele.val(accessKey[1] || "", tarValue(this.model, keys, cursor));
+			ele.val(accessKey[1] || '', tarValue(this.model, keys, cursor));
 		}
 	}
 	var normalizeIbm = function(element, prefix) {
