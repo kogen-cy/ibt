@@ -49,7 +49,7 @@ function IsBoringTemplate(element) {
 	var _PREV_DATA = null;
 
 	var error = function(msg) {
-		error("[error!] " + msg);
+		console.error("[error!] " + msg);
 	}
 
 	/***
@@ -240,19 +240,26 @@ function IsBoringTemplate(element) {
 	/*****
 	 * priority 0:[valAttr] 30:value 40:innerHTML
 	 *****/
-	var valGetSet = function(valAttr, data) {
-		if (typeof data !== 'undefined') {
-			if (valAttr) {this.setAttribute(valAttr, data); return this;}
-			if (typeof this.value !== 'undefined') {this.value = data; return this;}
-
-			this.innerHTML = data;
-			return this;
+	var elementVal = function(valAttr, data) {
+		if (typeof data === 'undefined') {
+			if (valAttr) {
+				if (valAttr == 'innerHTML') return this.innerHTML;
+				return this.getAttribute(valAttr);
+			}
+			if (typeof this.value !== 'undefined') return this.value;
+	
+			return this.innerHTML;
 		}
 
-		if (valAttr) return this.getAttribute(valAttr);
-		if (typeof this.value !== 'undefined') return this.value;
+		if (valAttr) {
+			if (valAttr == 'innerHTML') this.innerHTML = data;
+			else 						this.setAttribute(valAttr, data);
+			return this;
+		}
+		if (typeof this.value !== 'undefined') {this.value = data; return this;}
 
-		return this.innerHTML;
+		this.innerHTML = data;
+		return this;
 	}
 
 	/*****
@@ -502,7 +509,7 @@ function IsBoringTemplate(element) {
 	/*************************************************/
 	Element.prototype.s = selectElement;
 	Element.prototype.S = selectElements;
-	Element.prototype.val = valGetSet;
+	Element.prototype.val = elementVal;
 	Element.prototype.classes = function () { return this.classList; };
 	//Element.prototype.m = function () { return extractModel.call(this, {}); };
 	/*************************************************/
@@ -518,16 +525,23 @@ function IsBoringTemplate(element) {
 		return selectElements.call(this.rootElement, selector);
 	}
 	fn.m = function (accessKey, data) {
+		if (accessKey instanceof Object) {
+			this.model = accessKey;
+			return this;
+		}
+
 		extractModel.call(this.rootElement, this.model);
 		if (typeof accessKey === 'undefined') {
 			return this.model;
 		}
+
 		var keys = splitKey(accessKey);
 		if (typeof data !== 'undefined') {
 			var tc = tarContainer(this.model, keys);
 			tc[keys[keys.length-1]] = data;
 			return this;
 		}
+
 		return tarValue(this.model, keys);
 	}
 	fn.encode = function (strHtml) {
@@ -687,7 +701,7 @@ function IsBoringTemplate(element) {
 
 		if (typeof accessKeyOrFunc === 'function') {
 			var onSuccess = function(jsonResponse) {
-				accessKeyOrFunc(model, jsonResponse);
+				accessKeyOrFunc(baseIbt.model, jsonResponse);
 				bindModel.call(baseIbt, blockSelector);
 			}
 			this.api(url, paramMap, onSuccess, onError);
